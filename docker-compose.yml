@@ -1,0 +1,111 @@
+services:
+  api:
+    container_name: api
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "16000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/huggingface_db
+      - REDIS_URL=redis://redis:6379
+      - ALLOWED_ORIGINS=http://localhost:16500
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-use-strong-random-key}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-NNhJa8dRTe9uryu87t9NBcYnwa1cqICrY2uSDI9VxsY=}
+      - COMPANY_NAME=${COMPANY_NAME:-BuildWorks.AI}
+      - PRODUCT_NAME=${PRODUCT_NAME:-AISTRALE}
+      - PRODUCT_TAGLINE=${PRODUCT_TAGLINE:-Turn AI from a black box into an engineered system}
+      - FULL_PRODUCT_NAME=${FULL_PRODUCT_NAME:-AISTRALE - Turn AI from a black box into an engineered system}
+      - FOOTER_TEXT=${FOOTER_TEXT:-AISTRALE Build by Buildworks.AI}
+      - WEBSITE_URL=${WEBSITE_URL:-https://aistrale.com}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+    networks:
+      - app_network
+
+  web:
+    container_name: web
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "16500:3000"
+    environment:
+      - VITE_API_URL=http://localhost:16000
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_COMPANY_NAME=${VITE_COMPANY_NAME:-BuildWorks.AI}
+      - VITE_PRODUCT_NAME=${VITE_PRODUCT_NAME:-AISTRALE}
+      - VITE_PRODUCT_TAGLINE=${VITE_PRODUCT_TAGLINE:-Turn AI from a black box into an engineered system}
+      - VITE_FULL_PRODUCT_NAME=${VITE_FULL_PRODUCT_NAME:-AISTRALE - Turn AI from a black box into an engineered system}
+      - VITE_FOOTER_TEXT=${VITE_FOOTER_TEXT:-AISTRALE Build by Buildworks.AI}
+      - VITE_WEBSITE_URL=${VITE_WEBSITE_URL:-https://aistrale.com}
+      - VITE_REPO_URL=${VITE_REPO_URL:-https://github.com/buildworksai/aistrale.git}
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app_network
+
+  db:
+    container_name: db
+    image: pgvector/pgvector:pg17
+    ports:
+      - "15432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=huggingface_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "16379:6379"
+    networks:
+      - app_network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app_network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - app_network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # UI
+      - "4318:4318"   # OTLP HTTP
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,344 @@
+---
+description: Testing standards and patterns for AISTRALE
+globs: backend/**/*.py, frontend/**/*.{ts,tsx}, tests/**/*
+alwaysApply: true
+---
+
+# 🧪 AISTRALE Testing Standards
+
+**⚠️ CRITICAL**: All code must be tested. Aim for >80% test coverage. Tests must pass before merging PRs.
+
+## BuildWorks-06001 Testing Framework
+
+### Backend Testing
+- **Framework**: pytest with pytest-asyncio
+- **Test Structure**: `tests/unit/`, `tests/integration/`, `tests/e2e/`
+- **Coverage Tool**: pytest-cov
+- **Mocking**: unittest.mock, pytest-mock
+
+### Frontend Testing (Future)
+- **Framework**: Vitest or Jest
+- **Component Testing**: React Testing Library
+- **E2E Testing**: Playwright or Cypress
+
+## BuildWorks-06002 Test Structure
+
+```
+backend/tests/
+├── conftest.py          # Shared fixtures
+├── unit/                # Unit tests
+│   ├── test_auth.py
+│   ├── test_inference_service.py
+│   └── test_models.py
+├── integration/         # Integration tests
+│   ├── test_api_integration.py
+│   └── test_database.py
+└── e2e/                 # End-to-end tests
+    └── test_user_flows.py
+```
+
+## BuildWorks-06003 Unit Test Patterns
+
+### Python Unit Tests
+```python
+# ✅ GOOD: Unit test with proper structure
+import pytest
+from unittest.mock import Mock, patch
+from services.inference_service import InferenceService
+from core.exceptions import InferenceError
+
+class TestInferenceService:
+    @pytest.fixture
+    def service(self):
+        return InferenceService()
+
+    @pytest.mark.asyncio
+    async def test_run_inference_success(self, service):
+        """Test successful inference."""
+        mock_client = Mock()
+        mock_client.post.return_value = {"output": "test response"}
+        
+        result = await service.run_hf_inference(
+            mock_client, "model-name", "test input"
+        )
+        
+        assert result["output"] == "test response"
+        mock_client.post.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_run_inference_failure(self, service):
+        """Test inference failure handling."""
+        mock_client = Mock()
+        mock_client.post.side_effect = Exception("API error")
+        
+        with pytest.raises(InferenceError):
+            await service.run_hf_inference(
+                mock_client, "model-name", "test input"
+            )
+```
+
+## BuildWorks-06004 Integration Test Patterns
+
+### API Integration Tests
+```python
+# ✅ GOOD: Integration test with test client
+import pytest
+from httpx import AsyncClient
+from main import app
+from core.database import get_session
+from models.user import User
+
+@pytest.mark.asyncio
+async def test_inference_endpoint():
+    """Test inference API endpoint."""
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        # Login first
+        login_response = await ac.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@buildworks.ai", "password": "password"}
+        )
+        assert login_response.status_code == 200
+        
+        # Run inference
+        inference_response = await ac.post(
+            "/api/v1/inference",
+            json={
+                "model": "gpt-3.5-turbo",
+                "inputs": "Hello, world!"
+            },
+            cookies=login_response.cookies
+        )
+        
+        assert inference_response.status_code == 200
+        data = inference_response.json()
+        assert "output" in data
+        assert "tokens" in data
+```
+
+## BuildWorks-06005 Test Fixtures
+
+### Database Fixtures
+```python
+# ✅ GOOD: Database test fixtures
+# backend/tests/conftest.py
+import pytest
+from sqlmodel import Session, create_engine, SQLModel
+from core.database import get_session
+from models.user import User
+
+@pytest.fixture(scope="function")
+def test_db():
+    """Create test database."""
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+    
+    with Session(engine) as session:
+        yield session
+    
+    SQLModel.metadata.drop_all(engine)
+
+@pytest.fixture
+def test_user(test_db: Session):
+    """Create test user."""
+    user = User(
+        email="test@example.com",
+        name="Test User",
+        hashed_password="hashed",
+        role="user"
+    )
+    test_db.add(user)
+    test_db.commit()
+    test_db.refresh(user)
+    return user
+```
+
+## BuildWorks-06006 Mocking External Services
+
+### Mocking LLM APIs
+```python
+# ✅ GOOD: Mocking external LLM services
+import pytest
+from unittest.mock import Mock, patch, AsyncMock
+from services.inference_service import InferenceService
+
+@pytest.fixture
+def mock_hf_client():
+    """Mock HuggingFace client."""
+    client = Mock()
+    client.post = Mock(return_value={"output": "mocked response"})
+    return client
+
+@pytest.fixture
+def mock_openai_client():
+    """Mock OpenAI client."""
+    client = Mock()
+    client.chat.completions.create = Mock(
+        return_value=Mock(
+            choices=[Mock(message=Mock(content="mocked response"))]
+        )
+    )
+    return client
+
+@pytest.mark.asyncio
+async def test_hf_inference_with_mock(mock_hf_client):
+    """Test HuggingFace inference with mocked client."""
+    service = InferenceService()
+    result = await service.run_hf_inference(
+        mock_hf_client, "model", "input"
+    )
+    assert result["output"] == "mocked response"
+```
+
+## BuildWorks-06007 Test Coverage Requirements
+
+### Coverage Configuration
+```ini
+# .coveragerc
+[run]
+source = backend
+omit = 
+    */tests/*
+    */alembic/*
+    */venv/*
+    */__pycache__/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+```
+
+### Running Tests with Coverage
+```bash
+# Run tests with coverage
+pytest --cov=backend --cov-report=html --cov-report=term
+
+# Check coverage threshold
+pytest --cov=backend --cov-fail-under=80
+```
+
+## BuildWorks-06008 E2E Test Patterns
+
+### End-to-End User Flow Tests
+```python
+# ✅ GOOD: E2E test for user workflow
+import pytest
+from httpx import AsyncClient
+from main import app
+
+@pytest.mark.asyncio
+async def test_complete_inference_workflow():
+    """Test complete inference workflow."""
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        # 1. Login
+        login = await ac.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@buildworks.ai", "password": "password"}
+        )
+        assert login.status_code == 200
+        cookies = login.cookies
+        
+        # 2. Add token
+        token_response = await ac.post(
+            "/api/v1/tokens",
+            json={"provider": "huggingface", "token": "test_token"},
+            cookies=cookies
+        )
+        assert token_response.status_code == 201
+        
+        # 3. Run inference
+        inference = await ac.post(
+            "/api/v1/inference",
+            json={"model": "gpt-3.5-turbo", "inputs": "test"},
+            cookies=cookies
+        )
+        assert inference.status_code == 200
+        
+        # 4. Check telemetry
+        telemetry = await ac.get("/api/v1/telemetry", cookies=cookies)
+        assert telemetry.status_code == 200
+        assert len(telemetry.json()) > 0
+```
+
+## BuildWorks-06009 Test Best Practices
+
+### Do's
+- ✅ Test one thing per test
+- ✅ Use descriptive test names
+- ✅ Use fixtures for common setup
+- ✅ Mock external dependencies
+- ✅ Test both success and failure cases
+- ✅ Test edge cases and boundary conditions
+- ✅ Keep tests independent and isolated
+
+### Don'ts
+- ❌ Don't test implementation details
+- ❌ Don't create tests that depend on other tests
+- ❌ Don't use real external APIs in unit tests
+- ❌ Don't skip error cases
+- ❌ Don't write tests without assertions
+
+## BuildWorks-06010 CI/CD Integration
+
+### GitHub Actions Test Workflow
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -e ".[test]"
+      - name: Run tests
+        run: |
+          cd backend
+          pytest --cov=. --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+```
+
+## BuildWorks-06011 Test Data Management
+
+### Test Factories
+```python
+# ✅ GOOD: Test data factories
+# backend/tests/factories.py
+from models.user import User
+from faker import Faker
+
+fake = Faker()
+
+def create_test_user(**kwargs) -> User:
+    """Create test user with defaults."""
+    defaults = {
+        "email": fake.email(),
+        "name": fake.name(),
+        "hashed_password": "hashed_password",
+        "role": "user"
+    }
+    defaults.update(kwargs)
+    return User(**defaults)
+```
+
+---
+
+**Next Steps**: 
+- Run tests: `pytest`
+- Check coverage: `pytest --cov=. --cov-report=html`
+- Review `05-code-quality.mdc` for code quality standards

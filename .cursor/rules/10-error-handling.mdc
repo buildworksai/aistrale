@@ -1,0 +1,385 @@
+---
+description: Error handling standards and patterns for AISTRALE
+globs: backend/**/*.py, frontend/**/*.{ts,tsx}
+alwaysApply: true
+---
+
+# ⚠️ AISTRALE Error Handling Standards
+
+**⚠️ CRITICAL**: All errors must be handled gracefully with proper logging and user-friendly messages.
+
+## BuildWorks-10001 Custom Exception Hierarchy
+
+### Exception Base Classes
+```python
+# ✅ REQUIRED: Custom exception hierarchy (Implemented)
+# backend/core/exceptions.py
+class BaseAPIException(Exception):
+    """Base exception for all API errors."""
+    def __init__(
+        self,
+        message: str,
+        status_code: int = 500,
+        error_code: str = "INTERNAL_ERROR"
+    ):
+        self.message = message
+        self.status_code = status_code
+        self.error_code = error_code
+        super().__init__(self.message)
+
+class InferenceError(BaseAPIException):
+    """Inference-related errors."""
+    def __init__(self, message: str):
+        super().__init__(
+            message,
+            status_code=500,
+            error_code="INFERENCE_ERROR"
+        )
+
+class AuthenticationError(BaseAPIException):
+    """Authentication errors."""
+    def __init__(self, message: str = "Authentication failed"):
+        super().__init__(
+            message,
+            status_code=401,
+            error_code="AUTHENTICATION_ERROR"
+        )
+
+class ValidationError(BaseAPIException):
+    """Validation errors."""
+    def __init__(self, message: str):
+        super().__init__(
+            message,
+            status_code=400,
+            error_code="VALIDATION_ERROR"
+        )
+
+class NotFoundError(BaseAPIException):
+    """Resource not found errors."""
+    def __init__(self, resource: str, identifier: str):
+        super().__init__(
+            f"{resource} with id {identifier} not found",
+            status_code=404,
+            error_code="NOT_FOUND"
+        )
+```
+
+## BuildWorks-10002 Global Exception Handler
+
+### Exception Handler Setup
+```python
+# ✅ REQUIRED: Global exception handler
+# backend/main.py
+from fastapi import Request, status
+from fastapi.responses import JSONResponse
+from core.exceptions import BaseAPIException
+import structlog
+
+logger = structlog.get_logger()
+
+@app.exception_handler(BaseAPIException)
+async def api_exception_handler(
+    request: Request,
+    exc: BaseAPIException
+) -> JSONResponse:
+    """Handle custom API exceptions."""
+    logger.error(
+        "api_error",
+        error_code=exc.error_code,
+        message=exc.message,
+        path=request.url.path,
+        method=request.method,
+        request_id=getattr(request.state, "request_id", None)
+    )
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": exc.error_code,
+                "message": exc.message
+            }
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(
+    request: Request,
+    exc: Exception
+) -> JSONResponse:
+    """Handle unexpected exceptions."""
+    logger.error(
+        "unexpected_error",
+        error=str(exc),
+        path=request.url.path,
+        method=request.method,
+        request_id=getattr(request.state, "request_id", None),
+        exc_info=True
+    )
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "An unexpected error occurred"
+            }
+        }
+    )
+```
+
+## BuildWorks-10003 Error Handling Patterns
+
+### Service Layer Error Handling
+```python
+# ✅ GOOD: Error handling in service layer
+from core.exceptions import InferenceError, NotFoundError
+import structlog
+
+logger = structlog.get_logger()
+
+async def run_inference_safe(
+    model: str,
+    inputs: str,
+    token: str
+) -> dict:
+    """Run inference with proper error handling."""
+    try:
+        client = InferenceClient(token=token)
+        result = client.post(
+            json={"inputs": inputs, "model": model}
+        )
+        return result
+    except requests.exceptions.RequestException as e:
+        logger.error(
+            "inference_request_failed",
+            model=model,
+            error=str(e),
+            exc_info=True
+        )
+        raise InferenceError(f"Failed to connect to inference service: {e}")
+    except Exception as e:
+        logger.error(
+            "inference_unexpected_error",
+            model=model,
+            error=str(e),
+            exc_info=True
+        )
+        raise InferenceError(f"Inference failed: {e}")
+```
+
+### API Layer Error Handling
+```python
+# ✅ GOOD: Error handling in API layer
+from fastapi import HTTPException, Depends
+from core.exceptions import InferenceError, ValidationError
+from core.security import get_current_user
+
+@router.post("/api/v1/inference")
+async def run_inference(
+    request: InferenceRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Run inference endpoint with error handling."""
+    # Validation
+    if not request.model:
+        raise ValidationError("Model is required")
+    
+    if not request.inputs:
+        raise ValidationError("Inputs are required")
+    
+    try:
+        result = await inference_service.run(
+            model=request.model,
+            inputs=request.inputs,
+            user_id=current_user.id
+        )
+        return result
+    except InferenceError as e:
+        # Re-raise custom exceptions (handled by global handler)
+        raise
+    except Exception as e:
+        # Unexpected errors
+        logger.error(
+            "unexpected_inference_error",
+            error=str(e),
+            exc_info=True
+        )
+        raise InferenceError("Inference service unavailable")
+```
+
+## BuildWorks-10004 Frontend Error Handling
+
+### Error Handling in React
+```typescript
+// ✅ GOOD: Error handling in React components
+import { useState } from 'react';
+import { api } from '@/lib/api';
+
+interface ApiError {
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+export function InferenceComponent() {
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleInference = async () => {
+    setError(null);
+    setLoading(true);
+    
+    try {
+      await api.runInference({
+        model: 'gpt-3.5-turbo',
+        inputs: 'test'
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        // Try to parse API error
+        try {
+          const apiError = JSON.parse(err.message) as ApiError;
+          setError(apiError.error.message);
+        } catch {
+          setError(err.message || 'An unexpected error occurred');
+        }
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="error-message" role="alert">
+          {error}
+        </div>
+      )}
+      {/* Component content */}
+    </div>
+  );
+}
+```
+
+## BuildWorks-10005 Error Recovery
+
+### Retry Logic
+```python
+# ✅ GOOD: Retry logic for transient failures
+import asyncio
+from typing import Callable, TypeVar, Any
+
+T = TypeVar('T')
+
+async def retry_with_backoff(
+    func: Callable[[], T],
+    max_retries: int = 3,
+    initial_delay: float = 1.0
+) -> T:
+    """Retry function with exponential backoff."""
+    for attempt in range(max_retries):
+        try:
+            return await func()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            
+            delay = initial_delay * (2 ** attempt)
+            logger.warning(
+                "retry_attempt",
+                attempt=attempt + 1,
+                max_retries=max_retries,
+                delay=delay,
+                error=str(e)
+            )
+            await asyncio.sleep(delay)
+    
+    raise Exception("Max retries exceeded")
+```
+
+## BuildWorks-10006 Error Logging
+
+### Structured Error Logging
+```python
+# ✅ GOOD: Structured error logging
+import structlog
+
+logger = structlog.get_logger()
+
+try:
+    result = await run_inference(model, inputs)
+except InferenceError as e:
+    logger.error(
+        "inference_error",
+        error_code=e.error_code,
+        message=e.message,
+        model=model,
+        user_id=user_id,
+        request_id=request_id,
+        exc_info=True
+    )
+    raise
+except Exception as e:
+    logger.error(
+        "unexpected_error",
+        error=str(e),
+        error_type=type(e).__name__,
+        model=model,
+        user_id=user_id,
+        request_id=request_id,
+        exc_info=True
+    )
+    raise InferenceError("Inference service unavailable")
+```
+
+## BuildWorks-10007 User-Friendly Error Messages
+
+### Error Message Standards
+- ✅ Clear and actionable
+- ✅ No technical jargon
+- ✅ Include what went wrong and what to do
+- ✅ Don't expose sensitive information
+- ✅ Consistent error format
+
+```python
+# ✅ GOOD: User-friendly error messages
+class ValidationError(BaseAPIException):
+    """Validation errors with user-friendly messages."""
+    def __init__(self, field: str, message: str):
+        user_message = f"Invalid {field}: {message}"
+        super().__init__(
+            user_message,
+            status_code=400,
+            error_code="VALIDATION_ERROR"
+        )
+
+# Usage
+if not email or "@" not in email:
+    raise ValidationError("email", "Please provide a valid email address")
+```
+
+## BuildWorks-10008 Error Response Format
+
+### Standardized Error Response
+```python
+# ✅ REQUIRED: Standardized error response format
+{
+    "error": {
+        "code": "ERROR_CODE",
+        "message": "User-friendly error message",
+        "details": {}  # Optional additional details
+    }
+}
+```
+
+---
+
+**Next Steps**: 
+- Review `09-observability.mdc` for error tracking with Sentry
+- Check `08-auth-security.mdc` for security-related errors
+- Implement retry logic for external API calls

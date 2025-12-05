@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aistrale-backend"
+version = "0.1.0"
+description = "Backend for AISTRALE - Turn AI from a black box into an engineered system"
+authors = [
+  { name = "BuildWorks.AI", email = "admin@buildworks.ai" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlmodel",
+    "psycopg2-binary",
+    "pgvector",
+    "redis",
+    "huggingface_hub",
+    "openai",
+    "passlib[bcrypt]",
+    "pydantic-settings",
+    "python-multipart",
+    "pyjwt",
+    "httpx",
+    "starsessions",
+    "requests",
+    "Pillow",
+    "groq",
+    "sentry-sdk",
+    "structlog",
+    "prometheus-fastapi-instrumentator",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-instrumentation-requests",
+    "opentelemetry-instrumentation-httpx",
+    "opentelemetry-exporter-otlp",
+    "opentelemetry-exporter-otlp-proto-http",
+    "alembic",
+    "slowapi",
+    "bandit",
+    "jinja2",
+    "cryptography",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "httpx",
+]
+dev = [
+    "ruff",
+    "mypy",
+    "pre-commit",
+    "types-redis",
+    "types-requests",
+    "types-python-dateutil",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "UP", "PL", "RUF"]
+ignore = ["PLR0913", "PLR0912", "PLR0915"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["PLR2004", "E501"]
+"api/**/*" = ["B008"]
+"main.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+explicit_package_bases = true
+exclude = ["alembic", "tests"]
+plugins = ["pydantic.mypy"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]
