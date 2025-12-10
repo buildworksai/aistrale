@@ -7,7 +7,7 @@ alwaysApply: true
 # 🐍 AISTRALE Python Standards
 
 ## BuildWorks-02001 Python Version & Environment
-- Use Python 3.9+ (as specified in pyproject.toml)
+- Use Python 3.11+ (as specified in pyproject.toml)
 - Use virtual environments for development
 - Follow PEP 8 style guidelines
 - Use Black for code formatting (line length: 88)

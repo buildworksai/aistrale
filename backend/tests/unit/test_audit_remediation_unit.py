@@ -1,9 +1,11 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
+import pytest
 from services.inference_service import run_inference
 from models.prompt import Prompt
 from core.metrics import INFERENCE_COUNT
 
-def test_inference_with_prompt_rendering(mock_session):
+@pytest.mark.asyncio
+async def test_inference_with_prompt_rendering(mock_session):
     # Setup
     prompt = Prompt(
         name="test-render",
@@ -14,14 +16,18 @@ def test_inference_with_prompt_rendering(mock_session):
     )
     mock_session.get.return_value = prompt
     
-    # Mock external API
-    with patch("services.inference_service.InferenceClient") as mock_client_cls:
-        mock_client = MagicMock()
-        mock_client_cls.return_value = mock_client
-        mock_client.text_generation.return_value = "Generated text"
+    # Mock provider
+    with patch("services.inference_service.get_provider") as mock_get_provider:
+        mock_provider = MagicMock()
+        mock_provider.run_inference = AsyncMock(return_value={
+            "output": "Generated text",
+            "input_tokens": None,
+            "output_tokens": None,
+        })
+        mock_get_provider.return_value = mock_provider
         
         # Run
-        run_inference(
+        await run_inference(
             session=mock_session,
             user_id=1,
             provider="huggingface",
@@ -32,22 +38,25 @@ def test_inference_with_prompt_rendering(mock_session):
             prompt_variables={"name": "World"}
         )
         
-        # Verify prompt was rendered and passed to client
-        # The rendered prompt should be "Hello World"
-        # run_inference logic: input_text = render_prompt(...) -> "Hello World"
-        # full_input construction: "User: Hello World\nAssistant:" (since history is empty)
-        
-        args, _ = mock_client.text_generation.call_args
-        assert "Hello World" in args[0]
+        # Verify prompt was rendered and passed to provider
+        call_args = mock_provider.run_inference.call_args
+        assert call_args is not None
+        # The input_text should be "Hello World" after rendering
+        assert "Hello World" in call_args.kwargs.get("input_text", "")
 
-def test_metrics_recording(mock_session):
+@pytest.mark.asyncio
+async def test_metrics_recording(mock_session):
     # Reset counter
     INFERENCE_COUNT._metrics.clear()
     
-    with patch("services.inference_service.InferenceClient") as mock_client_cls:
-        mock_client = MagicMock()
-        mock_client_cls.return_value = mock_client
-        mock_client.text_generation.return_value = "Generated text"
+    with patch("services.inference_service.get_provider") as mock_get_provider:
+        mock_provider = MagicMock()
+        mock_provider.run_inference = AsyncMock(return_value={
+            "output": "Generated text",
+            "input_tokens": None,
+            "output_tokens": None,
+        })
+        mock_get_provider.return_value = mock_provider
         
         run_inference(
             session=mock_session,

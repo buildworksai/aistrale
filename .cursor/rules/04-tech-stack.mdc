@@ -15,7 +15,7 @@ alwaysApply: true
 # Backend Framework
 FASTAPI_VERSION=latest
 UVICORN_VERSION=latest
-PYTHON_VERSION=3.9
+PYTHON_VERSION=3.11
 
 # Database
 POSTGRES_VERSION=17
@@ -94,7 +94,7 @@ JAEGER_IMAGE=jaegertracing/all-in-one:latest
 - **Caching**: Redis (Alpine)
 - **Monitoring**: Prometheus (latest), Grafana (latest)
 - **Tracing**: Jaeger (latest)
-- **Environment**: Python 3.9+, Node.js 18+
+- **Environment**: Python 3.11+, Node.js 18+
 
 ## BuildWorks-12002 Banned Technologies (by exclusion)
 - Any tech not listed above is banned for this repository unless formally approved.

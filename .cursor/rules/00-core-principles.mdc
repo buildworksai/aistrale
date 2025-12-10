@@ -78,7 +78,7 @@ AISTRALE implements **structured error handling**:
 
 AISTRALE uses a **strictly defined technology stack**:
 
-- **Backend**: Python 3.9+, FastAPI, SQLModel, PostgreSQL 17 with pgvector
+- **Backend**: Python 3.11+, FastAPI, SQLModel, PostgreSQL 17 with pgvector
 - **Frontend**: Vite, React, TypeScript, Tailwind CSS
 - **LLM SDKs**: HuggingFace Hub, OpenAI SDK
 - **Infrastructure**: Docker, Redis, Prometheus, Grafana, Jaeger

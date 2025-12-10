@@ -5,6 +5,7 @@ from core.database import get_session
 from core.limiter import limiter
 from api.deps import get_current_user_id
 from models.token import Token, TokenCreate, TokenRead
+from services.security_audit_service import log_security_event
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ def create_token(
         is_default=token_in.is_default,
         encrypted_token="" # Initialize
     )
-    token.set_token(token_in.token_value)
+    token.set_token(token_in.token_value, session)
 
     if token.is_default:
         # Unset other defaults for this user
@@ -61,6 +62,19 @@ def delete_token(
     token = session.get(Token, token_id)
     if not token or token.user_id != user_id:
         raise HTTPException(status_code=404, detail="Token not found")
+    
+    # Log token deletion
+    ip_address = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent")
+    log_security_event(
+        session=session,
+        event_type="token_deleted",
+        ip_address=ip_address,
+        user_id=user_id,
+        user_agent=user_agent,
+        details={"provider": token.provider, "token_id": token_id},
+    )
+    
     session.delete(token)
     session.commit()
     return {"ok": True}
@@ -112,7 +126,7 @@ def update_token(
     
     # Update token value if provided
     if token_update.token_value:
-        db_token.set_token(token_update.token_value)
+        db_token.set_token(token_update.token_value, session)
 
     # Handle is_default logic
     if token_update.is_default and not db_token.is_default:

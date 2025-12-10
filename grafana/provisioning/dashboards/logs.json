@@ -1,0 +1,40 @@
+{
+  "dashboard": {
+    "title": "AISTRALE Logs",
+    "tags": ["logs", "aistrale"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Logs",
+        "type": "logs",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "{service=\"api\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": false,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 27,
+    "version": 1
+  }
+}
+

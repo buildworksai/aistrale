@@ -9,6 +9,7 @@ from core.limiter import limiter
 from models.chat import ChatMessage
 from models.token import Token
 from services.inference_service import run_inference
+from services.security_audit_service import log_security_event
 
 router = APIRouter()
 
@@ -45,6 +46,22 @@ async def run_inference_endpoint(
             status_code=400, detail="Token provider does not match request provider"
         )
 
+    # Log token access
+    ip_address = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent")
+    log_security_event(
+        session=session,
+        event_type="token_access",
+        ip_address=ip_address,
+        user_id=user_id,
+        user_agent=user_agent,
+        details={
+            "provider": token.provider,
+            "token_id": token.id,
+            "model": inference_request.model,
+        },
+    )
+
     # Fetch chat history (last 20 messages)
     history_objs = session.exec(
         select(ChatMessage)
@@ -62,8 +79,7 @@ async def run_inference_endpoint(
     session.add(user_msg)
     session.commit()
 
-    # Retrieve token value (will be updated to use encryption later)
-    # For now, assuming token.token_value is still plain text until next step
+    # Retrieve token value (encrypted, decrypted on access)
     token_val = token.token_value 
 
     result = await run_inference(

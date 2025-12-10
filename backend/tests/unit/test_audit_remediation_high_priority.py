@@ -33,14 +33,13 @@ async def test_manual_tracing_and_error_context(mock_session):
         mock_span = MagicMock()
         mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         
-        # Simulate error
-        with patch("services.inference_service.AsyncInferenceClient") as mock_client_cls:
-            mock_client = MagicMock()
-            mock_client_cls.return_value = mock_client
-            # Async mock for text_generation
+        # Simulate error with provider abstraction
+        with patch("services.inference_service.get_provider") as mock_get_provider:
+            mock_provider = MagicMock()
             async def side_effect(*args, **kwargs):
                 raise Exception("API Error")
-            mock_client.text_generation.side_effect = side_effect
+            mock_provider.run_inference = side_effect
+            mock_get_provider.return_value = mock_provider
             
             with pytest.raises(InferenceError):
                 await run_inference(

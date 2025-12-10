@@ -1,9 +1,10 @@
 import uuid
+from contextlib import asynccontextmanager
 
 import sentry_sdk
 import structlog
 from alembic.config import Config
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -44,7 +45,65 @@ if settings.SENTRY_DSN:
         profiles_sample_rate=1.0,
     )
 
-app = FastAPI(title=get_full_product_name())
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events."""
+    # Startup
+    logger.info("application_starting")
+    
+    # Run Alembic migrations
+    try:
+        alembic_cfg = Config("alembic.ini")
+        # Ensure we use the correct database URL
+        alembic_cfg.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+        # Check for multiple heads and upgrade to all heads if needed
+        try:
+            from alembic import script
+            script_dir = script.ScriptDirectory.from_config(alembic_cfg)
+            heads = script_dir.get_revisions("heads")
+            if len(heads) > 1:
+                # Multiple heads - upgrade to all heads
+                command.upgrade(alembic_cfg, "heads")
+            else:
+                command.upgrade(alembic_cfg, "head")
+        except Exception:
+            # Fallback: try upgrading to heads directly
+            command.upgrade(alembic_cfg, "heads")
+        logger.info("database_migrations_applied")
+    except Exception as e:
+        logger.error("migration_error", error=str(e))
+
+    # Seed admin user
+    with Session(engine) as session:
+        admin = session.exec(
+            select(User).where(User.email == "admin@buildworks.ai")
+        ).first()
+        if not admin:
+            admin = User(
+                email="admin@buildworks.ai",
+                password_hash=get_password_hash("admin@134"),
+                role="admin",
+            )
+            session.add(admin)
+            session.commit()
+            logger.info("admin_user_seeded")
+    
+    # Start scheduler
+    from core.scheduler import start_scheduler
+    start_scheduler()
+    logger.info("scheduler_started")
+    
+    yield
+    
+    # Shutdown
+    logger.info("application_shutting_down")
+    from core.scheduler import shutdown_scheduler
+    shutdown_scheduler()
+    logger.info("scheduler_shutdown")
+
+
+app = FastAPI(title=get_full_product_name(), lifespan=lifespan)
 
 # Instrument Prometheus
 Instrumentator().instrument(app).expose(app)
@@ -94,23 +153,48 @@ async def logging_middleware(request: Request, call_next):
 
 @app.exception_handler(BaseAPIException)
 async def api_exception_handler(request: Request, exc: BaseAPIException):
-    return JSONResponse(
+    response = JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": exc.error_code, "message": exc.message}},
     )
+    # Add CORS headers to error responses
+    origin = request.headers.get("origin")
+    if origin in origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTP exceptions (401, 403, etc.) with CORS headers."""
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+    # Add CORS headers to error responses
+    origin = request.headers.get("origin")
+    if origin in origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 
+# CORS configuration - allow frontend origin
 origins = [
     "http://localhost:16500",
     "http://localhost:3000",
+    "http://127.0.0.1:16500",
+    "http://127.0.0.1:3000",
 ]
 
+# CORS must be added before other middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
@@ -128,34 +212,6 @@ app.add_middleware(
 )
 
 
-@app.on_event("startup")
-def on_startup():
-    # Run Alembic migrations
-    try:
-        alembic_cfg = Config("alembic.ini")
-        # Ensure we use the correct database URL
-        alembic_cfg.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
-        command.upgrade(alembic_cfg, "head")
-        print("Database migrations applied successfully")
-    except Exception as e:
-        print(f"Error applying migrations: {e}")
-
-    # init_db() # No longer needed as Alembic handles schema creation
-
-    # Seed admin user
-    with Session(engine) as session:
-        admin = session.exec(
-            select(User).where(User.email == "admin@buildworks.ai")
-        ).first()
-        if not admin:
-            admin = User(
-                email="admin@buildworks.ai",
-                password_hash=get_password_hash("admin@134"),
-                role="admin",
-            )
-            session.add(admin)
-            session.commit()
-            print("Admin user seeded")
 
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
@@ -164,6 +220,9 @@ app.include_router(tokens.router, prefix="/api/tokens", tags=["tokens"])
 app.include_router(inference.router, prefix="/api/inference", tags=["inference"])
 app.include_router(prompts.router, prefix="/api/prompts", tags=["prompts"])
 app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"])
+from api import security_audit, admin
+app.include_router(security_audit.router, prefix="/api/security-audit", tags=["security-audit"])
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 
 @app.get("/")

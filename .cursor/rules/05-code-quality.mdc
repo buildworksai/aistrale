@@ -45,7 +45,7 @@ profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -60,7 +60,7 @@ repos:
     rev: latest
     hooks:
       - id: black
-        language_version: python3.9
+        language_version: python3.11
 
   - repo: https://github.com/pycqa/isort
     rev: latest
@@ -270,7 +270,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - run: |
           pip install black isort flake8 mypy
           black --check .

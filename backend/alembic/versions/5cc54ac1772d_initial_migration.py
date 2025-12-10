@@ -80,20 +80,20 @@ def upgrade() -> None:
     
     if "chatmessage" in tables:
         # Table exists, alter it
-    op.alter_column(
-        "chatmessage",
-        "content",
-        existing_type=sa.TEXT(),
-        type_=sqlmodel.sql.sqltypes.AutoString(),
-        existing_nullable=False,
-    )
-    op.alter_column(
-        "chatmessage",
-        "created_at",
-        existing_type=postgresql.TIMESTAMP(),
-        nullable=False,
-        existing_server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
-    )
+        op.alter_column(
+            "chatmessage",
+            "content",
+            existing_type=sa.TEXT(),
+            type_=sqlmodel.sql.sqltypes.AutoString(),
+            existing_nullable=False,
+        )
+        op.alter_column(
+            "chatmessage",
+            "created_at",
+            existing_type=postgresql.TIMESTAMP(),
+            nullable=False,
+            existing_server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
+        )
     else:
         # Table doesn't exist, create it
         # Only create foreign key if user table exists
@@ -116,13 +116,13 @@ def upgrade() -> None:
     if "token" in tables:
         columns = [col["name"] for col in inspector.get_columns("token")]
         if "is_default" in columns:
-    op.alter_column(
-        "token",
-        "is_default",
-        existing_type=sa.BOOLEAN(),
-        nullable=False,
+            op.alter_column(
+                "token",
+                "is_default",
+                existing_type=sa.BOOLEAN(),
+                nullable=False,
                 server_default=sa.text("false"),
-    )
+            )
 
 
 def downgrade() -> None:

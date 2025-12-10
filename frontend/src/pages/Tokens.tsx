@@ -140,6 +140,8 @@ export default function Tokens() {
                                     <option value="huggingface">Hugging Face</option>
                                     <option value="openai">OpenAI</option>
                                     <option value="groq">Groq</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="gemini">Google Gemini</option>
                                 </select>
                             </div>
                             <div>
@@ -216,6 +218,8 @@ export default function Tokens() {
                                     <option value="huggingface">Hugging Face</option>
                                     <option value="openai">OpenAI</option>
                                     <option value="groq">Groq</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="gemini">Google Gemini</option>
                                 </select>
                             </div>
                             <div>

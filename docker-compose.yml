@@ -7,6 +7,12 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "16000:8000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=api"
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/huggingface_db
       - REDIS_URL=redis://redis:6379
@@ -81,6 +87,39 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
+    networks:
+      - app_network
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    networks:
+      - app_network
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./prometheus/loki-config.yml:/etc/loki/loki-config.yml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - app_network
+    depends_on:
+      - promtail
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./prometheus/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/promtail-config.yml
     networks:
       - app_network
 
@@ -109,3 +148,4 @@ networks:
 
 volumes:
   postgres_data:
+  loki_data:

@@ -9,7 +9,7 @@ description = "Backend for AISTRALE - Turn AI from a black box into an engineere
 authors = [
   { name = "BuildWorks.AI", email = "admin@buildworks.ai" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -28,6 +28,9 @@ dependencies = [
     "requests",
     "Pillow",
     "groq",
+    "anthropic",
+    "google-generativeai",
+    "apscheduler",
     "sentry-sdk",
     "structlog",
     "prometheus-fastapi-instrumentator",
@@ -66,7 +69,7 @@ where = ["."]
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP", "PL", "RUF"]
 ignore = ["PLR0913", "PLR0912", "PLR0915"]
@@ -83,7 +86,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 ignore_missing_imports = true
 explicit_package_bases = true
 exclude = ["alembic", "tests"]

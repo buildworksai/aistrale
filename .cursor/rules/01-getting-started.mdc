@@ -14,7 +14,7 @@ alwaysApply: true
 
 ## Prerequisites
 
-- **Python**: 3.9+ (check with `python --version`)
+- **Python**: 3.11+ (check with `python --version`)
 - **Node.js**: 18+ (check with `node --version`)
 - **Docker**: Latest version with Docker Compose
 - **Git**: Latest version

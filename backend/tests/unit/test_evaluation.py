@@ -20,11 +20,18 @@ async def test_run_evaluation(mock_session: Session):
         user_id=1
     )
     prompt = Prompt(id=1, name="test", template="test", user_id=1)
+    # Create properly encrypted token
+    from cryptography.fernet import Fernet
+    from core.config import get_settings
+    settings = get_settings()
+    cipher = Fernet(settings.ENCRYPTION_KEY.encode())
+    encrypted_token = cipher.encrypt(b"test_token").decode()
+    
     token = Token(
         id=1, 
         user_id=1, 
         provider="openai", 
-        encrypted_token="gAAAAABpMmpM86mzD18u24q-tn1D54uYqYZ8QqvVowgFXU_Zwg_l5-gEMEEsipPg2nfBljRcjR3NmZx8rEAI-09NoDDrJXpaYg==", 
+        encrypted_token=encrypted_token,
         label="test"
     )
     

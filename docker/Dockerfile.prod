@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.9-slim as builder
+FROM python:3.11-slim as builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY backend/pyproject.toml .
 RUN pip install .
 
 # Final stage
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

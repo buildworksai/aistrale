@@ -3,7 +3,7 @@
 **Turn AI from a black box into an engineered system**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
 
 AISTRALE is an LLM engineering platform for managing model inference, telemetry tracking, and observability. Supports HuggingFace Hub and OpenAI SDK with secure token management, distributed tracing, and performance monitoring.
@@ -70,7 +70,7 @@ Open http://localhost:8089 to start the test.
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.11+
 - Node.js 18+
 - Docker and Docker Compose
 - Git
@@ -159,6 +159,17 @@ cd frontend
 npm run lint
 npm run type-check
 ```
+
+## Architecture Documentation
+
+AISTRALE follows the C4 Model for software architecture documentation. See [docs/c4-model/](docs/c4-model/) for detailed architecture diagrams:
+
+- **Context Diagram**: System in context of users and external systems
+- **Container Diagram**: High-level technical building blocks
+- **Component Diagram**: API application component breakdown
+- **Deployment Diagram**: Production deployment architecture
+
+All diagrams are in Mermaid format and can be viewed on GitHub or using [Mermaid Live Editor](https://mermaid.live).
 
 ## Project Structure
 
