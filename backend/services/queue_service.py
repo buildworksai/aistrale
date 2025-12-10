@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 from models.reliability import RequestQueue
 
@@ -63,3 +63,26 @@ class QueueService:
 
     def get_queue_depth(self) -> int:
         return len(self._queue)
+
+    def list_items(self) -> List[RequestQueue]:
+        """
+        List all queue items.
+        """
+        return list(self._db_mirror.values())
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """
+        Get queue metrics.
+        """
+        pending = sum(1 for r in self._db_mirror.values() if r.status == "pending")
+        processing = sum(1 for r in self._db_mirror.values() if r.status == "processing")
+        completed = sum(1 for r in self._db_mirror.values() if r.status == "completed")
+        
+        return {
+            "total_pending": pending,
+            "total_processing": processing,
+            "total_completed": completed,
+            "avg_wait_time": 0.0,
+            "avg_processing_time": 0.0,
+            "queue_depth": len(self._queue)
+        }

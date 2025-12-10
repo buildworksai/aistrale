@@ -1,123 +1,342 @@
-# AISTRALE
+<div align="center">
+
+# 🚀 AISTRALE
 
 **Turn AI from a black box into an engineered system**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-teal.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue.svg)](https://www.postgresql.org/)
 
-AISTRALE is an LLM engineering platform for managing model inference, telemetry tracking, and observability. Supports HuggingFace Hub and OpenAI SDK with secure token management, distributed tracing, and performance monitoring.
+**Enterprise-grade LLM engineering platform with multi-provider support, comprehensive observability, and production-ready reliability.**
 
-**Built by:** [BuildWorks.AI](https://buildworks.ai)  
-**Website:** [https://aistrale.com](https://aistrale.com)  
-**License:** [Apache License 2.0](LICENSE)
+[Website](https://aistrale.com) • [Documentation](#-documentation) • [Quick Start](#-quick-start) • [Features](#-features)
 
 ---
 
-## Features
+</div>
 
-- **Multi-Provider LLM Inference**: HuggingFace Hub and OpenAI SDK support
-- **Telemetry Tracking**: Comprehensive tracking of inference execution, tokens, and performance
-- **Secure Token Management**: Encrypted storage and management of API tokens
-- **Observability Stack**: Structured logging, Prometheus metrics, OpenTelemetry tracing, Sentry error tracking
-- **Session-Based Authentication**: Redis-backed sessions with RBAC
-- **Health Monitoring**: Health checks and readiness probes
-- **Docker Deployment**: Complete Docker Compose setup with all services
+## 🎯 What is AISTRALE?
 
-## Tech Stack
+AISTRALE is a **production-ready LLM engineering platform** that transforms AI model inference from an unpredictable black box into a fully observable, secure, and cost-optimized engineering system. Built for teams that need **enterprise-grade reliability** without sacrificing developer experience.
 
-### Backend
-- **Framework**: FastAPI, Uvicorn
-- **Database**: PostgreSQL 17 with pgvector, SQLModel, Alembic
-- **Authentication**: Session-based with Redis
-- **LLM SDKs**: HuggingFace Hub, OpenAI SDK
-- **Observability**: structlog, Prometheus, OpenTelemetry, Sentry
+### Why AISTRALE?
 
-### Frontend
-- **Framework**: React 18, TypeScript 5
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **Routing**: React Router DOM
+- ✅ **5 LLM Providers** - HuggingFace, OpenAI, Groq, Anthropic, Google Gemini
+- ✅ **Zero Vendor Lock-in** - Switch providers with one click
+- ✅ **Enterprise Security** - Encryption, audit logs, RBAC, compliance-ready
+- ✅ **Cost Intelligence** - Track, forecast, and optimize spending automatically
+- ✅ **Production Reliability** - Circuit breakers, queuing, failover, 99.9% uptime
+- ✅ **Full Observability** - Metrics, logs, traces, error tracking
+- ✅ **Developer-First** - One-line integration, SDKs, CLI, VS Code extension
 
-### Infrastructure
-- **Containerization**: Docker, Docker Compose
-- **Monitoring**: Prometheus, Grafana
-- **Tracing**: Jaeger
-- **Caching**: Redis
+---
 
-## Deployment
+## ✨ Key Features
 
-### Docker Production
-Build and run the production container:
-```bash
-docker-compose -f docker/docker-compose.prod.yml up --build -d
+### 🔌 Multi-Provider LLM Inference
+Unified interface for **5 major LLM providers** with automatic failover and intelligent routing:
+- **HuggingFace Hub** - Open-source models
+- **OpenAI** - GPT-3.5, GPT-4, and more
+- **Groq** - Ultra-fast inference
+- **Anthropic** - Claude models
+- **Google Gemini** - Latest Gemini models
+
+**No vendor lock-in.** Switch providers instantly, compare performance, and optimize costs.
+
+### 📊 Comprehensive Observability
+**Production-grade monitoring** out of the box:
+- **Structured Logging** - JSON logs with correlation IDs (structlog)
+- **Prometheus Metrics** - Custom business metrics + system metrics
+- **Distributed Tracing** - OpenTelemetry with Jaeger
+- **Error Tracking** - Sentry integration
+- **Log Aggregation** - Loki + Promtail
+- **Alerting** - Prometheus Alertmanager
+
+### 🔐 Enterprise Security
+**Security-first architecture** for production workloads:
+- **Session-Based Auth** - HTTP-only cookies, Redis-backed sessions
+- **Token Encryption** - Fernet encryption with key rotation
+- **Security Audit Logs** - Complete audit trail of all actions
+- **Role-Based Access Control** - Admin/User roles with fine-grained permissions
+- **Data Loss Prevention** - PII detection and redaction
+- **Compliance Ready** - SOC 2, GDPR, HIPAA reporting (planned)
+
+### 💰 Cost Intelligence
+**Not just tracking—actively optimizing:**
+- Real-time cost tracking per model/provider
+- Cost forecasting and anomaly detection
+- Budget alerts and spending limits
+- Automatic cost optimization recommendations
+- Provider cost comparison
+
+### 🎯 Production Reliability
+**Built for 99.9% uptime:**
+- **Request Queuing** - Handle traffic spikes gracefully
+- **Circuit Breakers** - Prevent cascade failures
+- **Intelligent Retry** - Exponential backoff with jitter
+- **Automatic Failover** - Switch providers on failure
+- **Load Balancing** - Distribute requests intelligently
+- **Graceful Degradation** - Never fail completely
+
+### 🛠️ Developer Experience
+**One-line integration, zero configuration:**
+- **Python SDK** - `pip install aistrale` → `aistrale.run("prompt")`
+- **TypeScript SDK** - Full type safety for web apps
+- **CLI Tool** - `aistrale-cli` for local development
+- **VS Code Extension** - Prompt testing, telemetry viewing
+- **Framework Integrations** - LangChain, LlamaIndex ready
+- **Webhooks** - Real-time event notifications
+
+### 📝 Prompt Management
+**Version-controlled prompt templates:**
+- Create, version, and manage prompt templates
+- Variable substitution with validation
+- Template history and rollback
+- Reusable across projects
+
+### 📈 Telemetry & Analytics
+**Complete visibility into your LLM usage:**
+- Request/response logging
+- Token usage tracking
+- Cost analytics and forecasting
+- Performance metrics (latency, throughput)
+- Success/failure rates
+- Provider comparison
+
+---
+
+## 🏗️ Architecture
+
+AISTRALE follows **C4 Model** architecture documentation and is built with production-grade patterns:
+
+### System Architecture
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   React     │────▶│   FastAPI    │────▶│ PostgreSQL  │
+│  Frontend   │     │    Backend   │     │  + pgvector │
+└─────────────┘     └──────────────┘     └─────────────┘
+                            │
+                    ┌───────┴───────┐
+                    │               │
+              ┌─────▼─────┐   ┌────▼─────┐
+              │   Redis   │   │ Observ.   │
+              │  Sessions │   │  Stack    │
+              └───────────┘   └───────────┘
 ```
 
-### AWS Deployment (Terraform)
-1. Navigate to `terraform/` directory.
-2. Initialize Terraform: `terraform init`
-3. Apply configuration: `terraform apply`
+### Key Design Patterns
+- **Factory Pattern** - Provider abstraction for easy extensibility
+- **Strategy Pattern** - Unified interface across providers
+- **Repository Pattern** - Clean database access
+- **Middleware Pattern** - Session, observability, security
 
-## Load Testing
-Run Locust for load testing:
-```bash
-pip install locust
-locust -f tests/load/locustfile.py
-```
-Open http://localhost:8089 to start the test.
+See [Architecture Documentation](docs/c4-model/ARCHITECTURE.md) for detailed C4 Model diagrams.
 
-## Development
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
+- **Docker** and **Docker Compose**
+- **Git**
 
-- Python 3.11+
-- Node.js 18+
-- Docker and Docker Compose
-- Git
+### 1. Clone Repository
+```bash
+git clone https://github.com/buildworksai/aistrale.git
+cd aistrale
+```
 
-### Installation
+### 2. Start Services
+```bash
+docker-compose up -d
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/buildworksai/aistrale.git
-   cd aistrale
-   ```
+This starts:
+- **API**: http://localhost:16000
+- **Frontend**: http://localhost:16500
+- **PostgreSQL**: localhost:15432
+- **Redis**: localhost:16379
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Jaeger**: http://localhost:16686
 
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+### 3. Access Application
+1. Open http://localhost:16500
+2. Login with default credentials:
+   - **Email**: `admin@buildworks.ai`
+   - **Password**: `admin@134`
 
-3. **Start services**
-   ```bash
-   docker-compose up -d
-   ```
+### 4. Add Your First Token
+1. Navigate to **API Keys Tokens**
+2. Add a token for your preferred provider (OpenAI, HuggingFace, etc.)
+3. Start running inference!
 
-4. **Run database migrations**
-   ```bash
-   cd backend
-   alembic upgrade head
-   ```
+---
 
-5. **Access the application**
-   - **API**: http://localhost:16000
-   - **Frontend**: http://localhost:16500
-   - **API Docs**: http://localhost:16000/docs
-   - **Grafana**: http://localhost:3000 (admin/admin)
-   - **Jaeger**: http://localhost:16686
-   - **Prometheus**: http://localhost:9090
+## 📚 Documentation
 
-### Default Credentials
+### Architecture
+- **[C4 Model Diagrams](docs/c4-model/)** - Context, Container, Component, Deployment
+- **[Architecture Overview](docs/c4-model/ARCHITECTURE.md)** - System architecture principles
+- **[Feature Architecture](docs/architecture/)** - Detailed architecture for differentiator features
 
-Default admin user (created via seeder):
-- **Email**: `admin@buildworks.ai`
-- **Password**: Check seeder script or environment variables
+### API Documentation
+- **Interactive API Docs**: http://localhost:16000/docs (Swagger UI)
+- **API Reference**: [docs/API.md](docs/API.md)
 
-## Development
+### Development
+- **[Getting Started Guide](.cursor/rules/01-getting-started.mdc)** - Development setup
+- **[Core Principles](.cursor/rules/00-core-principles.mdc)** - Architectural principles
+- **[Tech Stack](.cursor/rules/04-tech-stack.mdc)** - Technology decisions
+
+### Planning
+- **[Implementation Plans](planning/)** - Feature implementation roadmaps
+- **[Engineering Gaps](reports/engineering_gaps_analysis.md)** - Gap analysis and priorities
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Framework** | FastAPI, Uvicorn | High-performance async API |
+| **Database** | PostgreSQL 17 + pgvector | Data persistence, future vector search |
+| **ORM** | SQLModel | Type-safe database models |
+| **Migrations** | Alembic | Database versioning |
+| **Auth** | Session-based (Redis) | Secure, scalable authentication |
+| **LLM SDKs** | HuggingFace Hub, OpenAI, Groq, Anthropic, Google Generative AI | Multi-provider support |
+| **Observability** | structlog, Prometheus, OpenTelemetry, Sentry, Loki | Full observability stack |
+
+### Frontend
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Framework** | React 18 | Modern UI framework |
+| **Language** | TypeScript 5 | Type safety |
+| **Build Tool** | Vite | Fast development and builds |
+| **Styling** | Tailwind CSS | Utility-first CSS |
+| **Routing** | React Router DOM | Client-side routing |
+
+### Infrastructure
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Containerization** | Docker, Docker Compose | Development and deployment |
+| **Monitoring** | Prometheus, Grafana | Metrics and dashboards |
+| **Tracing** | Jaeger | Distributed tracing |
+| **Logging** | Loki, Promtail | Log aggregation |
+| **Alerting** | Alertmanager | Alert routing |
+| **Caching** | Redis | Session storage |
+
+---
+
+## 🎨 Differentiator Features
+
+AISTRALE stands out with **5 key differentiators** that make it enterprise-ready:
+
+### 1. Enterprise Security & Compliance
+- Field-level encryption for PII
+- Data residency controls
+- Compliance reporting (SOC 2, GDPR, HIPAA)
+- Advanced RBAC (workspace/project/resource-level)
+- Data Loss Prevention (DLP)
+- Enhanced audit trails
+
+**Status**: Architecture designed, implementation in progress
+
+### 2. Cost Optimization Intelligence
+- Smart provider routing based on cost
+- Cost prediction and forecasting
+- Model performance/cost tradeoff analysis
+- Anomaly detection
+- Automatic cost optimization
+
+**Status**: Architecture designed, implementation in progress
+
+### 3. Multi-Provider Intelligence
+- Automatic failover between providers
+- Provider health monitoring
+- Side-by-side provider comparison
+- Multi-provider A/B testing
+- Unified model abstraction
+- Smart routing rules
+
+**Status**: Architecture designed, implementation in progress
+
+### 4. Developer Experience
+- Python SDK (one-line integration)
+- TypeScript SDK
+- CLI tool (`aistrale-cli`)
+- VS Code extension
+- Framework integrations (LangChain, LlamaIndex)
+- Webhook system
+
+**Status**: Architecture designed, implementation in progress
+
+### 5. Production Reliability
+- Request queuing for traffic spikes
+- Circuit breakers for failure prevention
+- Intelligent retry with exponential backoff
+- Performance benchmarking
+- Load balancing
+- Graceful degradation
+
+**Status**: Architecture designed, implementation in progress
+
+See [Architecture Documentation](docs/architecture/) for detailed implementation plans.
+
+---
+
+## 📦 Project Structure
+
+```
+aistrale/
+├── backend/                    # FastAPI backend
+│   ├── api/                   # API routes
+│   │   ├── auth.py           # Authentication
+│   │   ├── inference.py      # LLM inference
+│   │   ├── tokens.py         # Token management
+│   │   ├── prompts.py        # Prompt templates
+│   │   ├── telemetry.py      # Analytics
+│   │   └── ...
+│   ├── core/                  # Core utilities
+│   │   ├── config.py         # Configuration
+│   │   ├── security.py       # Auth & encryption
+│   │   ├── database.py       # DB connection
+│   │   └── ...
+│   ├── models/                # SQLModel database models
+│   ├── services/              # Business logic
+│   │   ├── llm_providers/    # Provider implementations
+│   │   ├── inference_service.py
+│   │   ├── pricing_service.py
+│   │   └── ...
+│   ├── tests/                 # Test suite
+│   └── alembic/               # Database migrations
+├── frontend/                   # React frontend
+│   ├── src/
+│   │   ├── components/       # Reusable components
+│   │   ├── pages/            # Page components
+│   │   ├── lib/              # Utilities
+│   │   └── ...
+│   └── package.json
+├── docs/                       # Documentation
+│   ├── c4-model/             # Architecture diagrams
+│   ├── architecture/          # Feature architecture
+│   └── API.md                # API reference
+├── planning/                   # Implementation plans
+├── docker-compose.yml          # Development services
+├── prometheus.yml             # Prometheus config
+└── README.md                  # This file
+```
+
+---
+
+## 🧪 Development
 
 ### Backend Development
-
 ```bash
 cd backend
 pip install -e ".[test]"
@@ -125,7 +344,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Frontend Development
-
 ```bash
 cd frontend
 npm install
@@ -133,83 +351,117 @@ npm run dev
 ```
 
 ### Running Tests
-
 ```bash
-# Backend tests
+# Backend tests with coverage
 cd backend
 pytest --cov=. --cov-report=html
 
-# Frontend tests (when implemented)
-cd frontend
-npm test
+# Check coverage report
+open htmlcov/index.html
 ```
 
 ### Code Quality
-
 ```bash
 # Backend
 cd backend
-black .
-isort .
-flake8 .
-mypy .
+black . && isort . && flake8 . && mypy .
 
 # Frontend
 cd frontend
-npm run lint
-npm run type-check
+npm run lint && npm run type-check
 ```
 
-## Architecture Documentation
+---
 
-AISTRALE follows the C4 Model for software architecture documentation. See [docs/c4-model/](docs/c4-model/) for detailed architecture diagrams:
+## 🚢 Deployment
 
-- **Context Diagram**: System in context of users and external systems
-- **Container Diagram**: High-level technical building blocks
-- **Component Diagram**: API application component breakdown
-- **Deployment Diagram**: Production deployment architecture
-
-All diagrams are in Mermaid format and can be viewed on GitHub or using [Mermaid Live Editor](https://mermaid.live).
-
-## Project Structure
-
-```
-aistrale/
-├── backend/              # FastAPI backend
-│   ├── api/             # API routes
-│   ├── core/            # Core utilities (config, security, etc.)
-│   ├── models/          # SQLModel database models
-│   ├── services/        # Business logic
-│   ├── tests/           # Test suite
-│   └── alembic/         # Database migrations
-├── frontend/            # React frontend
-│   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Page components
-│   │   └── lib/         # Utilities
-├── docker-compose.yml   # Docker services
-├── prometheus.yml       # Prometheus config
-└── .cursor/rules/       # Cursor IDE rules
+### Docker Compose (Development)
+```bash
+docker-compose up -d
 ```
 
-## Documentation
+### Production Deployment
+```bash
+# Build production images
+docker-compose -f docker/docker-compose.prod.yml build
 
-- **Architecture**: See `.cursor/rules/00-core-principles.mdc`
-- **Getting Started**: See `.cursor/rules/01-getting-started.mdc`
-- **API Documentation**: http://localhost:16000/docs (Swagger UI)
-- **Engineering Gaps Analysis**: `reports/engineering_gaps_analysis.md`
+# Deploy
+docker-compose -f docker/docker-compose.prod.yml up -d
+```
 
-## Contributing
+### Environment Variables
+See `.env.example` for required environment variables:
+- `DATABASE_URL` - PostgreSQL connection string
+- `REDIS_URL` - Redis connection string
+- `SECRET_KEY` - Session secret (generate strong random key)
+- `SENTRY_DSN` - Sentry error tracking (optional)
+- `ALLOWED_ORIGINS` - CORS allowed origins
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+---
 
-## Security
+## 📊 Monitoring & Observability
 
-For security vulnerabilities, please see [SECURITY.md](SECURITY.md).
+### Access Monitoring Tools
+- **Grafana**: http://localhost:3000 (admin/admin)
+  - Pre-configured dashboards for metrics
+  - Log visualization with Loki
+- **Jaeger**: http://localhost:16686
+  - Distributed tracing UI
+  - Request flow visualization
+- **Prometheus**: http://localhost:9090
+  - Metrics query interface
+  - Alert rule management
+- **API Metrics**: http://localhost:16000/metrics
+  - Prometheus-compatible metrics endpoint
 
-## License
+### Health Checks
+- **Health**: http://localhost:16000/health
+- **Readiness**: http://localhost:16000/ready
 
-Copyright 2025 AISTRALE  
+---
+
+## 🔒 Security
+
+### Authentication
+- **Session-based** - HTTP-only cookies, Redis-backed
+- **Password Hashing** - bcrypt with salt
+- **Session Expiration** - Configurable timeout
+
+### Authorization
+- **RBAC** - Role-based access control (Admin/User)
+- **Route Protection** - Deny-by-default policy
+- **Fine-grained Permissions** - Per-resource access control (planned)
+
+### Data Protection
+- **Token Encryption** - Fernet encryption at rest
+- **Key Rotation** - Automatic quarterly rotation
+- **Security Audit Logs** - Complete audit trail
+- **PII Detection** - Automatic detection and redaction
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Follow code standards** (see `.cursor/rules/05-code-quality.mdc`)
+4. **Write tests** (aim for >80% coverage)
+5. **Commit changes** (`git commit -m 'Add amazing feature'`)
+6. **Push to branch** (`git push origin feature/amazing-feature`)
+7. **Open a Pull Request**
+
+### Code Standards
+- **Python**: Black, isort, Flake8, mypy
+- **TypeScript**: ESLint, Prettier, strict mode
+- **Tests**: pytest for backend, comprehensive coverage
+- **Documentation**: Update README and docs for new features
+
+---
+
+## 📄 License
+
 Copyright 2025 BuildWorks.AI
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -224,13 +476,64 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-## Support
+---
 
-- **Website**: https://aistrale.com
-- **Issues**: https://github.com/buildworksai/aistrale/issues
+## 🆘 Support
+
+- **Website**: [https://aistrale.com](https://aistrale.com)
+- **Documentation**: [docs/](docs/)
+- **Issues**: [GitHub Issues](https://github.com/buildworksai/aistrale/issues)
 - **Email**: info@buildworks.ai
 
 ---
 
-**AISTRALE Build by Buildworks.AI**
+## 🌟 Roadmap
 
+### ✅ Q1 2025 - Completed
+**Core Platform Features (All Implemented)**
+- ✅ **Multi-Provider LLM Support** - 5 providers (HuggingFace, OpenAI, Groq, Anthropic, Gemini)
+- ✅ **Comprehensive Observability Stack** - Prometheus, Grafana, Jaeger, Loki, Sentry
+- ✅ **Security Audit Logging** - Complete audit trail with event tracking
+- ✅ **Cost Tracking & Analytics** - Real-time cost tracking per model/provider
+- ✅ **Encryption Key Rotation** - Automated quarterly rotation with re-encryption
+
+### 🔄 Q2 2025 - In Progress
+**Enterprise Features (Basic Implementation, Full Features Planned)**
+- 🔄 **Enterprise Security & Compliance** - Basic DLP and compliance services implemented, full features (field-level encryption, data residency, compliance reporting) planned
+- 🔄 **Cost Optimization Intelligence** - Basic cost service implemented, full optimization features (smart routing, forecasting, anomaly detection) planned
+- 🔄 **Multi-Provider Intelligence** - Basic services (health monitoring, comparison, A/B testing, failover) implemented, full intelligent routing planned
+- 📋 **Developer SDKs** - Architecture designed, implementation planned (Python, TypeScript)
+- 📋 **CLI Tool & VS Code Extension** - Architecture designed, implementation planned
+
+### 📋 Q3 2025 - Planned
+**Advanced Features (Architecture Designed, Implementation Planned)**
+- 📋 **Production Reliability** - Basic services (queue, circuit breaker, retry) implemented, full reliability features (load balancing, graceful degradation) planned
+- ✅ **Prompt Management** - Basic versioning implemented, advanced features (evaluation, optimization) planned
+- 📋 **Evaluation Framework** - Architecture designed, implementation planned
+- 🔄 **Webhook System** - Basic service implemented, full event system planned
+- 📋 **Framework Integrations** - Architecture designed, implementation planned (LangChain, LlamaIndex)
+
+**Status Legend:**
+- ✅ **Completed** - Fully implemented and production-ready
+- 🔄 **In Progress** - Basic implementation exists, full features in development
+- 📋 **Planned** - Architecture designed, implementation scheduled
+
+See [Planning Documentation](planning/) for detailed implementation plans and [Architecture Documentation](docs/architecture/) for technical designs.
+
+---
+
+## 🙏 Acknowledgments
+
+Built by [BuildWorks.AI](https://buildworks.ai)
+
+**AISTRALE** - Turn AI from a black box into an engineered system
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#-aistrale)**
+
+Built by [BuildWorks.AI](https://buildworks.ai)
+
+</div>

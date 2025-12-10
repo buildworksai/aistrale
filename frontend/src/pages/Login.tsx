@@ -13,6 +13,20 @@ export default function Login() {
     const navigate = useNavigate();
     const branding = getBranding();
 
+    // Check if user is already authenticated
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                await api.get('/api/auth/me');
+                // User is already logged in, redirect to dashboard
+                navigate('/', { replace: true });
+            } catch (error) {
+                // User is not authenticated, stay on login page
+            }
+        };
+        checkAuth();
+    }, [navigate]);
+
     // Clear error when user starts typing
     useEffect(() => {
         if (error && (email || password)) {

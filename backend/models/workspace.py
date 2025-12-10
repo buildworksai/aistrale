@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
-from backend.models.region import Region
+from models.region import Region
 
 class Workspace(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

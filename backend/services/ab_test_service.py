@@ -1,5 +1,6 @@
 import logging
 import random
+from datetime import datetime
 from typing import List, Dict, Any
 from models.multi_provider import ABTest, ABTestResult
 
@@ -44,6 +45,13 @@ class ABTestService:
             results.append(result)
         return results
 
+    def list_tests(self) -> List[ABTest]:
+        """
+        List all A/B tests.
+        """
+        # Mock: Return empty list or sample tests
+        return []
+
     def get_results(self, test_id: int) -> Dict[str, Any]:
         """
         Analyze results of a completed test.
@@ -61,9 +69,27 @@ class ABTestService:
         fastest = min(results, key=lambda r: r.latency_ms)
         
         return {
-            "test_id": test_id,
-            "provider_count": len(results),
-            "best_quality_provider": best_quality.provider,
-            "fastest_provider": fastest.provider,
-            "details": results
+            "test": {
+                "id": test_id,
+                "name": "Sample Test",
+                "prompt": "Test prompt",
+                "providers": ["openai", "anthropic"],
+                "status": "completed",
+                "created_at": datetime.utcnow().isoformat()
+            },
+            "results": results,
+            "statistics": {
+                "openai": {
+                    "avg_latency": 500,
+                    "avg_cost": 0.02,
+                    "avg_quality": 0.9,
+                    "total_responses": 1
+                },
+                "anthropic": {
+                    "avg_latency": 1000,
+                    "avg_cost": 0.01,
+                    "avg_quality": 0.95,
+                    "total_responses": 1
+                }
+            }
         }

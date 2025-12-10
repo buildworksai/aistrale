@@ -1,10 +1,15 @@
+"""Data Loss Prevention service."""
+
 import logging
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+from sqlmodel import Session, select
+
 from models.dlp_rule import DLPRule, DLPAction
 from services.pii_detection_service import PIIDetectionService
 
 logger = logging.getLogger(__name__)
+
 
 class DLPService:
     """
@@ -12,13 +17,50 @@ class DLPService:
     Combines PII detection with custom regex rules to permit/block/redact content.
     """
 
-    def __init__(self, pii_service: PIIDetectionService):
+    def __init__(
+        self, pii_service: PIIDetectionService, session: Optional[Session] = None
+    ):
         self.pii_service = pii_service
-        # In real app, load from DB
-        self.rules: List[DLPRule] = [
-            DLPRule(name="Block Auth Tokens", pattern=r"(sk-[a-zA-Z0-9]{20,})", action=DLPAction.BLOCK, priority=100),
-            DLPRule(name="Redact Internal IPs", pattern=r"(10\.\d{1,3}\.\d{1,3}\.\d{1,3})", action=DLPAction.REDACT, priority=50)
+        self.session = session
+        self._rules_cache: Optional[List[DLPRule]] = None
+
+    def _load_rules(self) -> List[DLPRule]:
+        """Load DLP rules from database or use defaults."""
+        if self._rules_cache is not None:
+            return self._rules_cache
+
+        if self.session:
+            try:
+                rules = self.session.exec(
+                    select(DLPRule).where(DLPRule.is_active == True)  # noqa: E712
+                ).all()
+                if rules:
+                    self._rules_cache = list(rules)
+                    return self._rules_cache
+            except Exception as e:
+                logger.warning(f"Failed to load DLP rules from DB: {e}")
+
+        # Default rules if DB not available
+        default_rules = [
+            DLPRule(
+                name="Block Auth Tokens",
+                pattern=r"(sk-[a-zA-Z0-9]{20,})",
+                action=DLPAction.BLOCK,
+                priority=100,
+            ),
+            DLPRule(
+                name="Redact Internal IPs",
+                pattern=r"(10\.\d{1,3}\.\d{1,3}\.\d{1,3})",
+                action=DLPAction.REDACT,
+                priority=50,
+            ),
         ]
+        self._rules_cache = default_rules
+        return default_rules
+
+    def invalidate_cache(self):
+        """Invalidate the rules cache."""
+        self._rules_cache = None
 
     def scan_content(self, text: str) -> Tuple[bool, str, List[str]]:
         """
@@ -33,7 +75,8 @@ class DLPService:
         processed_text = text
 
         # 1. Check custom rules
-        sorted_rules = sorted(self.rules, key=lambda r: r.priority, reverse=True)
+        rules = self._load_rules()
+        sorted_rules = sorted(rules, key=lambda r: r.priority, reverse=True)
         
         for rule in sorted_rules:
             if not rule.is_active:

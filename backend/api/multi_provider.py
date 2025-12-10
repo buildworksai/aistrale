@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List, Dict, Any, Optional
 from services.health_service import HealthService
 from services.comparison_service import ComparisonService
@@ -46,6 +46,11 @@ async def start_ab_test(
     """Start an A/B test."""
     return await service.start_test(name, prompt, providers)
 
+@router.get("/ab-test")
+def list_ab_tests(service: ABTestService = Depends(get_ab_test_service)):
+    """List all A/B tests."""
+    return service.list_tests()
+
 @router.get("/ab-test/{test_id}")
 def get_ab_test_results(
     test_id: int,
@@ -54,11 +59,34 @@ def get_ab_test_results(
     """Get results of an A/B test."""
     return service.get_results(test_id)
 
+@router.get("/routing")
+def list_routing_rules():
+    """List all smart routing rules."""
+    return []
+
+@router.post("/routing")
+def create_routing_rule(rule: Dict[str, Any]):
+    """Create a smart routing rule."""
+    return {"id": 1, **rule}
+
+@router.get("/models")
+def list_models(service: ModelAbstractionService = Depends(get_model_abstraction_service)):
+    """List all model mappings."""
+    return service.list_mappings()
+
 @router.post("/resolve-model")
 def resolve_model_name(
-    unified_name: str, 
-    preferred_provider: Optional[str] = None,
+    unified_name: str = Query(..., description="Unified model name to resolve"),
+    preferred_provider: Optional[str] = Query(None, description="Preferred provider"),
     service: ModelAbstractionService = Depends(get_model_abstraction_service)
 ):
     """Resolve a unified model name to a provider-specific model."""
-    return service.resolve_model(unified_name, preferred_provider)
+    result = service.resolve_model(unified_name, preferred_provider)
+    # Map response to match frontend expectations
+    return {
+        "unified_name": result.get("unified_name", unified_name),
+        "provider": result.get("provider"),
+        "provider_model": result.get("actual_model", result.get("model")),
+        "capabilities": service.get_capabilities(unified_name),
+        "pricing": result.get("pricing", {})
+    }

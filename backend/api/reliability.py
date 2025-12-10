@@ -54,6 +54,36 @@ def simulate_failure(provider: str, service: CircuitBreakerService = Depends(get
     service.record_failure(provider)
     return {"status": "recorded_failure"}
 
+@router.get("/queue")
+def list_queue_items(service: QueueService = Depends(get_queue_service)):
+    """List all queue items."""
+    return service.list_items()
+
+@router.get("/queue/metrics")
+def get_queue_metrics(service: QueueService = Depends(get_queue_service)):
+    """Get queue metrics."""
+    return service.get_metrics()
+
+@router.get("/load-balancers")
+def list_load_balancers():
+    """List all load balancers."""
+    return []
+
+@router.post("/load-balancers")
+def create_load_balancer(balancer: Dict[str, Any]):
+    """Create a load balancer."""
+    return {"id": 1, **balancer}
+
+@router.get("/load-balancers/analytics")
+def get_load_balancer_analytics():
+    """Get load balancer analytics."""
+    return {
+        "total_requests": 0,
+        "avg_latency": 0,
+        "distribution": [],
+        "algorithm_performance": {}
+    }
+
 @router.get("/benchmarks/{provider}")
 def get_benchmarks(provider: str, service: ReliabilityBenchmarkService = Depends(get_benchmark_service)):
     """Get internal performance benchmarks."""

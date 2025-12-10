@@ -54,8 +54,8 @@ def get_cost_analytics(
     query = select(Telemetry).where(
         and_(
             Telemetry.user_id == user_id,
-            Telemetry.created_at >= start_date,
-            Telemetry.created_at <= end_date,
+            Telemetry.timestamp >= start_date,
+            Telemetry.timestamp <= end_date,
         )
     )
     
@@ -83,14 +83,14 @@ def get_cost_analytics(
     by_time: Dict[str, float] = {}
     for record in telemetry_records:
         if group_by == "day":
-            time_key = record.created_at.strftime("%Y-%m-%d")
+            time_key = record.timestamp.strftime("%Y-%m-%d")
         elif group_by == "week":
             # Get week number
-            time_key = record.created_at.strftime("%Y-W%W")
+            time_key = record.timestamp.strftime("%Y-W%W")
         elif group_by == "month":
-            time_key = record.created_at.strftime("%Y-%m")
+            time_key = record.timestamp.strftime("%Y-%m")
         else:
-            time_key = record.created_at.strftime("%Y-%m-%d")
+            time_key = record.timestamp.strftime("%Y-%m-%d")
         
         by_time[time_key] = by_time.get(time_key, 0.0) + (record.cost or 0.0)
     

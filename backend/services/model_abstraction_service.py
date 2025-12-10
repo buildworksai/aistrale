@@ -14,18 +14,36 @@ class ModelAbstractionService:
         # Simulation: Load mappings
         self.mappings = [
             ModelMapping(
+                id=1,
                 model_name="smart-fast",
-                provider="openai",
-                equivalent_models=["gpt-3.5-turbo", "claude-instant-1", "llama-2-70b"],
-                capabilities={"context_window": 16000, "streaming": True},
-                pricing={"input": 0.0015, "output": 0.002}
+                provider="groq",
+                equivalent_models=["gpt-3.5-turbo", "claude-3-haiku", "gemini-pro"],
+                capabilities={"max_tokens": 4096, "supports_streaming": True, "supports_functions": False, "context_window": 8192},
+                pricing={"input_per_1k": 0.0005, "output_per_1k": 0.0015}
             ),
-             ModelMapping(
-                model_name="reasoning-heavy",
+            ModelMapping(
+                id=2,
+                model_name="smart-balanced",
                 provider="openai",
-                equivalent_models=["gpt-4", "claude-2"],
-                capabilities={"context_window": 32000, "streaming": True},
-                pricing={"input": 0.03, "output": 0.06}
+                equivalent_models=["gpt-3.5-turbo", "claude-3-sonnet", "gemini-pro"],
+                capabilities={"max_tokens": 8192, "supports_streaming": True, "supports_functions": True, "context_window": 16384},
+                pricing={"input_per_1k": 0.0015, "output_per_1k": 0.002}
+            ),
+            ModelMapping(
+                id=3,
+                model_name="smart-quality",
+                provider="anthropic",
+                equivalent_models=["gpt-4", "claude-3-opus", "gemini-ultra"],
+                capabilities={"max_tokens": 16384, "supports_streaming": True, "supports_functions": True, "context_window": 200000},
+                pricing={"input_per_1k": 0.03, "output_per_1k": 0.06}
+            ),
+            ModelMapping(
+                id=4,
+                model_name="smart-cheap",
+                provider="huggingface",
+                equivalent_models=["llama-2-7b", "mistral-7b", "phi-2"],
+                capabilities={"max_tokens": 2048, "supports_streaming": False, "supports_functions": False, "context_window": 4096},
+                pricing={"input_per_1k": 0.0, "output_per_1k": 0.0}
             ),
         ]
 
@@ -70,3 +88,20 @@ class ModelAbstractionService:
         """
         mapping = next((m for m in self.mappings if m.model_name == unified_name), None)
         return mapping.capabilities if mapping else {}
+
+    def list_mappings(self) -> List[Dict[str, Any]]:
+        """
+        Get all model mappings.
+        """
+        # Convert to dict format for JSON serialization
+        result = []
+        for mapping in self.mappings:
+            result.append({
+                "id": mapping.id,
+                "model_name": mapping.model_name,
+                "provider": mapping.provider,
+                "equivalent_models": mapping.equivalent_models,
+                "capabilities": mapping.capabilities,
+                "pricing": mapping.pricing
+            })
+        return result

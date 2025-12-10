@@ -118,7 +118,15 @@ Instrumentator().instrument(app).expose(app)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Security Middleware
+# CORS configuration - allow frontend origin (must be defined FIRST so it runs LAST and processes all responses)
+origins = [
+    "http://localhost:16500",
+    "http://localhost:3000",
+    "http://127.0.0.1:16500",
+    "http://127.0.0.1:3000",
+]
+
+# Security Middleware (added first, runs last - outermost)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(SlowAPIMiddleware)
 
@@ -130,6 +138,56 @@ if settings.JAEGER_ENABLED:
         # Log error but don't crash app if tracing fails
         logger.error("tracing_setup_failed", error=str(e))
 
+# CORS fallback middleware - handles OPTIONS and ensures CORS headers on all responses
+# Added before CORS middleware so it runs after (innermost)
+@app.middleware("http")
+async def cors_fallback_middleware(request: Request, call_next):
+    """Ensure CORS headers are always present, even if other middleware fails."""
+    # Handle OPTIONS preflight requests
+    if request.method == "OPTIONS":
+        origin = request.headers.get("origin")
+        if origin in origins:
+            response = JSONResponse(
+                status_code=200,
+                content={}
+            )
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Max-Age"] = "3600"
+            return response
+    
+    try:
+        response = await call_next(request)
+        # Ensure CORS headers are present even if middleware didn't add them
+        origin = request.headers.get("origin")
+        if origin in origins:
+            if "Access-Control-Allow-Origin" not in response.headers:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+    except Exception as e:
+        # Create error response with CORS headers
+        error_response = JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"}
+        )
+        origin = request.headers.get("origin")
+        if origin in origins:
+            error_response.headers["Access-Control-Allow-Origin"] = origin
+            error_response.headers["Access-Control-Allow-Credentials"] = "true"
+        return error_response
+
+# CORS middleware - added LAST so it runs FIRST (innermost, processes requests first)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
@@ -153,8 +211,8 @@ async def logging_middleware(request: Request, call_next):
         )
         return response
     except Exception as e:
-        log.error("request_failed", error=str(e))
-        raise e
+        log.error("request_failed", error=str(e), exc_info=True)
+        raise
 
 
 @app.exception_handler(BaseAPIException)
@@ -184,24 +242,20 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
-
-# CORS configuration - allow frontend origin
-origins = [
-    "http://localhost:16500",
-    "http://localhost:3000",
-    "http://127.0.0.1:16500",
-    "http://127.0.0.1:3000",
-]
-
-# CORS must be added before other middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions (500 errors) with CORS headers."""
+    logger.error("unhandled_exception", error=str(exc), exc_info=True)
+    response = JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"}
+    )
+    # Add CORS headers to error responses
+    origin = request.headers.get("origin")
+    if origin in origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 
 app.add_middleware(SessionAutoloadMiddleware)
@@ -230,7 +284,7 @@ from api import admin
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # New Feature Routers
-from api import multi_provider, reliability, webhooks, security_audit, dlp, cost, compliance
+from api import multi_provider, reliability, webhooks, security_audit, dlp, cost, compliance, workspaces, projects, permissions, regions, evaluation
 app.include_router(multi_provider.router, prefix="/api/multi-provider", tags=["Multi-Provider"])
 app.include_router(reliability.router, prefix="/api/reliability", tags=["Reliability"])
 app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])
@@ -238,6 +292,11 @@ app.include_router(security_audit.router, prefix="/api/security-audit", tags=["S
 app.include_router(dlp.router, prefix="/api/dlp", tags=["DLP"])
 app.include_router(cost.router, prefix="/api/cost", tags=["Cost"])
 app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
+app.include_router(workspaces.router, prefix="/api/workspaces", tags=["Workspaces"])
+app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
+app.include_router(permissions.router, prefix="/api/permissions", tags=["Permissions"])
+app.include_router(regions.router, prefix="/api/regions", tags=["Regions"])
+app.include_router(evaluation.router, prefix="/api/evaluation", tags=["Evaluation"])
 
 
 @app.get("/")
