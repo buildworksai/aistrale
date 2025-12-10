@@ -11,6 +11,7 @@ class SecurityAudit(SQLModel, table=True):
     """Security audit log entry."""
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    __table_args__ = {"extend_existing": True}
     event_type: str = Field(index=True)  # login_success, login_failure, token_access, etc.
     user_id: Optional[int] = Field(default=None, index=True, foreign_key="user.id")
     ip_address: str

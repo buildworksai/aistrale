@@ -50,13 +50,13 @@ export default function Prompts() {
                 .split(',')
                 .map(v => v.trim())
                 .filter(v => v.length > 0);
-            
+
             await api.post('/api/prompts/', {
                 name,
                 template,
                 input_variables: variables
             });
-            
+
             setName('');
             setTemplate('');
             setInputVariables('');
@@ -77,12 +77,12 @@ export default function Prompts() {
                 .split(',')
                 .map(v => v.trim())
                 .filter(v => v.length > 0);
-            
+
             await api.patch(`/api/prompts/${editingPrompt.id}`, {
                 template: template || editingPrompt.template,
                 input_variables: variables.length > 0 ? variables : editingPrompt.input_variables
             });
-            
+
             setEditingPrompt(null);
             setTemplate('');
             setInputVariables('');
@@ -135,7 +135,7 @@ export default function Prompts() {
         <Layout>
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">Prompt Templates</h3>
+                    <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">LLM Prompts</h3>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="inline-flex justify-center py-1.5 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-main hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-main"

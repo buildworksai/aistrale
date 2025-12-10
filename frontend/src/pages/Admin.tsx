@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../lib/api';
 
@@ -64,9 +64,9 @@ export default function Admin() {
             setRotating(true);
             setError('');
             setSuccess('');
-            
+
             const res = await api.post('/api/admin/rotate-encryption-key');
-            
+
             setSuccess(`Encryption key rotated successfully! New key ID: ${res.data.new_key_id}, Re-encrypted ${res.data.re_encrypted_tokens_count} tokens.`);
             fetchActiveKey();
         } catch (err: any) {
@@ -109,7 +109,7 @@ export default function Admin() {
                         <div>
                             <p className="font-semibold text-lg">Access Restricted</p>
                             <p className="mt-1">
-                                {currentUser 
+                                {currentUser
                                     ? 'You need admin privileges to access administrative controls.'
                                     : 'Please log in with an admin account to access administrative controls.'}
                             </p>
@@ -182,11 +182,10 @@ export default function Admin() {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                                         <div className="px-3 py-2">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${
-                                                activeKey.is_active
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${activeKey.is_active
                                                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                            }`}>
+                                                }`}>
                                                 {activeKey.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
@@ -215,8 +214,8 @@ export default function Admin() {
                                         <div>
                                             <p className="text-sm font-medium text-blue-900 dark:text-blue-200">Key Rotation</p>
                                             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                                                Rotating the encryption key will generate a new key and re-encrypt all existing tokens. 
-                                                The old key will be deactivated but kept for historical purposes. 
+                                                Rotating the encryption key will generate a new key and re-encrypt all existing tokens.
+                                                The old key will be deactivated but kept for historical purposes.
                                                 This operation is automatically scheduled quarterly but can be triggered manually.
                                             </p>
                                         </div>

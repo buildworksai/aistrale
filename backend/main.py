@@ -75,24 +75,30 @@ async def lifespan(app: FastAPI):
         logger.error("migration_error", error=str(e))
 
     # Seed admin user
-    with Session(engine) as session:
-        admin = session.exec(
-            select(User).where(User.email == "admin@buildworks.ai")
-        ).first()
-        if not admin:
-            admin = User(
-                email="admin@buildworks.ai",
-                password_hash=get_password_hash("admin@134"),
-                role="admin",
-            )
-            session.add(admin)
-            session.commit()
-            logger.info("admin_user_seeded")
+    try:
+        with Session(engine) as session:
+            admin = session.exec(
+                select(User).where(User.email == "admin@buildworks.ai")
+            ).first()
+            if not admin:
+                admin = User(
+                    email="admin@buildworks.ai",
+                    password_hash=get_password_hash("admin@134"),
+                    role="admin",
+                )
+                session.add(admin)
+                session.commit()
+                logger.info("admin_user_seeded")
+    except Exception as e:
+        logger.error("admin_seed_failed", error=str(e))
     
     # Start scheduler
-    from core.scheduler import start_scheduler
-    start_scheduler()
-    logger.info("scheduler_started")
+    try:
+        from core.scheduler import start_scheduler
+        start_scheduler()
+        logger.info("scheduler_started")
+    except Exception as e:
+        logger.error("scheduler_start_failed", error=str(e))
     
     yield
     
@@ -220,9 +226,18 @@ app.include_router(tokens.router, prefix="/api/tokens", tags=["tokens"])
 app.include_router(inference.router, prefix="/api/inference", tags=["inference"])
 app.include_router(prompts.router, prefix="/api/prompts", tags=["prompts"])
 app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"])
-from api import security_audit, admin
-app.include_router(security_audit.router, prefix="/api/security-audit", tags=["security-audit"])
+from api import admin
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+
+# New Feature Routers
+from api import multi_provider, reliability, webhooks, security_audit, dlp, cost, compliance
+app.include_router(multi_provider.router, prefix="/api/multi-provider", tags=["Multi-Provider"])
+app.include_router(reliability.router, prefix="/api/reliability", tags=["Reliability"])
+app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])
+app.include_router(security_audit.router, prefix="/api/security-audit", tags=["Security Audit"])
+app.include_router(dlp.router, prefix="/api/dlp", tags=["DLP"])
+app.include_router(cost.router, prefix="/api/cost", tags=["Cost"])
+app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
 
 
 @app.get("/")

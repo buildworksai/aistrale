@@ -64,7 +64,7 @@ export default function Tokens() {
         <Layout>
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">API Tokens</h3>
+                    <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">API Keys Tokens</h3>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="inline-flex justify-center py-1.5 px-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-main hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-main"

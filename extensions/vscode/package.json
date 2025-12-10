@@ -1,0 +1,36 @@
+{
+    "name": "aistrale-vscode",
+    "displayName": "Aistrale AI",
+    "description": "Aistrale VS Code Extension",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.75.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:aistrale.runInference"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "aistrale.runInference",
+                "title": "Aistrale: Run Inference"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.75.0",
+        "@types/node": "16.x",
+        "typescript": "^4.9.0"
+    },
+    "dependencies": {
+        "@aistrale/sdk": "file:../../sdks/typescript"
+    }
+}

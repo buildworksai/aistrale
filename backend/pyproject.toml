@@ -46,6 +46,9 @@ dependencies = [
     "bandit",
     "jinja2",
     "cryptography",
+    "presidio-analyzer",
+    "presidio-anonymizer",
+    "spacy",
 ]
 
 [project.optional-dependencies]

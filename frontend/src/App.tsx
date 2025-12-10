@@ -7,6 +7,11 @@ import Telemetry from './pages/Telemetry';
 import Prompts from './pages/Prompts';
 import Users from './pages/Users';
 import SecurityAudit from './pages/SecurityAudit';
+import SecurityDashboard from './pages/SecurityDashboard';
+import CostDashboard from './pages/CostDashboard';
+import ProviderDashboard from './pages/ProviderDashboard';
+import ReliabilityDashboard from './pages/ReliabilityDashboard';
+import DeveloperSettings from './pages/DeveloperSettings';
 import Admin from './pages/Admin';
 
 function App() {
@@ -21,6 +26,11 @@ function App() {
         <Route path="/prompts" element={<Prompts />} />
         <Route path="/users" element={<Users />} />
         <Route path="/security-audit" element={<SecurityAudit />} />
+        <Route path="/security-compliance" element={<SecurityDashboard />} />
+        <Route path="/cost-optimization" element={<CostDashboard />} />
+        <Route path="/provider-intelligence" element={<ProviderDashboard />} />
+        <Route path="/reliability" element={<ReliabilityDashboard />} />
+        <Route path="/developer-settings" element={<DeveloperSettings />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

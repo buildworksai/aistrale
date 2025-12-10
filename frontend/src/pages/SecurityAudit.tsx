@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../lib/api';
 
@@ -18,7 +18,7 @@ export default function SecurityAudit() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [currentUser, setCurrentUser] = useState<any>(null);
-    
+
     // Filters
     const [eventTypeFilter, setEventTypeFilter] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
@@ -44,7 +44,7 @@ export default function SecurityAudit() {
             const params = new URLSearchParams();
             if (eventTypeFilter) params.append('event_type', eventTypeFilter);
             if (statusFilter) params.append('status', statusFilter);
-            
+
             const res = await api.get(`/api/security-audit/?${params.toString()}`);
             setEvents(res.data);
             setError('');
@@ -211,11 +211,10 @@ export default function SecurityAudit() {
                                                 {event.ip_address || '-'}
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                    event.status === 'SUCCESS'
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${event.status === 'SUCCESS'
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                         : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                }`}>
+                                                    }`}>
                                                     {event.status}
                                                 </span>
                                             </td>
