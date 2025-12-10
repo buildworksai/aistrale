@@ -259,34 +259,71 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     ))}
                 </nav>
 
-                {/* User Section */}
-                <div className="p-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                {/* User Section - Following Laws of UX: Progressive Disclosure & Contextual Information */}
+                <div className="p-3 border-t border-gray-200 dark:border-gray-700">
                     {currentUser && (
-                        <div className="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-primary-main flex items-center justify-center text-white text-xs font-semibold">
+                        <div className="group relative">
+                            {/* Compact User Avatar - Shows on hover/click (Progressive Disclosure) */}
+                            <button
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                aria-label="User account menu"
+                                title={`${currentUser.email} (${currentUser.role})`}
+                            >
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-main to-info-main flex items-center justify-center text-white text-sm font-semibold shadow-md flex-shrink-0">
                                     {currentUser.email?.charAt(0).toUpperCase() || 'U'}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                                        {currentUser.email}
+                                    {/* Show only name/username, not full email (Hick's Law - Reduce Information) */}
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                        {currentUser.email?.split('@')[0] || 'User'}
                                     </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                                        {currentUser.role}
-                                    </p>
+                                    {/* Role badge - Only show if admin (Contextual Information) */}
+                                    {currentUser.role === 'admin' && (
+                                        <div className="flex items-center gap-1 mt-0.5">
+                                            <svg className="w-3 h-3 text-warning-main" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                                Administrator
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            {/* Dropdown Menu - Appears on hover/focus (Progressive Disclosure) */}
+                            <div className="absolute bottom-full left-0 right-0 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 z-50">
+                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-2 min-w-[200px]">
+                                    {/* Full email shown in dropdown (Contextual - only when needed) */}
+                                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Signed in as</p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                            {currentUser.email}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 capitalize">
+                                            {currentUser.role} account
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Account Actions */}
+                                    <div className="py-1">
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors text-left"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            <span>Sign out</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span>Logout</span>
-                    </button>
                 </div>
             </aside>
 
