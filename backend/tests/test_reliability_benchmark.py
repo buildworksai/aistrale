@@ -1,6 +1,6 @@
 import pytest
 import logging
-from backend.services.reliability_benchmark_service import ReliabilityBenchmarkService
+from services.reliability_benchmark_service import ReliabilityBenchmarkService
 
 def test_record_metric_alert(caplog):
     service = ReliabilityBenchmarkService()

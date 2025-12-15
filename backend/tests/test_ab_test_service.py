@@ -1,5 +1,5 @@
 import pytest
-from backend.services.ab_test_service import ABTestService
+from services.ab_test_service import ABTestService
 
 @pytest.mark.asyncio
 async def test_start_test():

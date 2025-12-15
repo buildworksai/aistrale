@@ -1,5 +1,5 @@
 import pytest
-from backend.services.benchmark_service import BenchmarkService
+from services.benchmark_service import BenchmarkService
 
 def test_compare_to_industry():
     service = BenchmarkService()

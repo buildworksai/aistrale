@@ -8,8 +8,8 @@ sys.modules["presidio_analyzer"] = MagicMock()
 sys.modules["presidio_anonymizer"] = MagicMock()
 sys.modules["presidio_anonymizer.entities"] = MagicMock()
 
-from backend.services.dlp_service import DLPService
-from backend.models.dlp_rule import DLPRule, DLPAction
+from services.dlp_service import DLPService
+from models.dlp_rule import DLPRule, DLPAction
 
 @pytest.fixture
 def pii_service_mock():

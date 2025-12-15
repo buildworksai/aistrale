@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
-from backend.services.compliance_service import ComplianceService
-from backend.core.audit_logging import log_access
+from services.compliance_service import ComplianceService
+from core.audit_logging import log_access
 from fastapi import Request
 
 def test_soc2_report_generation():

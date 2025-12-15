@@ -1,5 +1,5 @@
 import pytest
-from backend.services.optimization_service import OptimizationService
+from services.optimization_service import OptimizationService
 
 def test_analyze_prompt_verbose():
     service = OptimizationService()

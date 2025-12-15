@@ -1,7 +1,7 @@
 import pytest
 from datetime import date
-from backend.services.cost_service import CostService
-from backend.models.cost_optimization import Budget
+from services.cost_service import CostService
+from models.cost_optimization import Budget
 
 def test_forecast_costs():
     service = CostService()

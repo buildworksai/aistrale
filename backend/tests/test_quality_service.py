@@ -1,6 +1,6 @@
 import pytest
-from backend.services.quality_service import QualityScoringService
-from backend.models.cost_optimization import ProviderPerformance
+from services.quality_service import QualityScoringService
+from models.cost_optimization import ProviderPerformance
 
 def test_calculate_quality_score():
     service = QualityScoringService()

@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from backend.services.circuit_breaker_service import CircuitBreakerService
+from services.circuit_breaker_service import CircuitBreakerService
 
 def test_circuit_trips():
     service = CircuitBreakerService(failure_threshold=3)

@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import MagicMock
 from fastapi import Request, Response
-from backend.models.region import Region
-from backend.services.region_service import RegionService
-from backend.core.region_middleware import RegionMiddleware
+from models.region import Region
+from services.region_service import RegionService
+from core.region_middleware import RegionMiddleware
 
 @pytest.fixture
 def region_service():

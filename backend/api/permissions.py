@@ -3,7 +3,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlmodel import Session, select, and_
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from core.database import get_session
 from api.deps import get_current_user_id, require_admin
@@ -31,8 +31,7 @@ class PermissionRead(BaseModel):
     action: str
     granted: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PermissionUpdate(BaseModel):

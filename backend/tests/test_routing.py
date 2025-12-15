@@ -1,5 +1,5 @@
 import pytest
-from backend.services.routing_service import RoutingService
+from services.routing_service import RoutingService
 
 def test_route_manual_high_quality():
     service = RoutingService()

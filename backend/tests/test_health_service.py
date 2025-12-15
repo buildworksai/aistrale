@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from backend.services.health_service import HealthService
+from services.health_service import HealthService
 
 def test_check_health_structure():
     service = HealthService()

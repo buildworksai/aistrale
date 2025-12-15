@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
-from backend.services.failover_service import FailoverService
-from backend.models.multi_provider import ProviderHealth
+from services.failover_service import FailoverService
+from models.multi_provider import ProviderHealth
 
 @pytest.fixture
 def health_service_mock():

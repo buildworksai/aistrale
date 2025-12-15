@@ -1,5 +1,5 @@
 import pytest
-from backend.services.permission_service import PermissionService
+from services.permission_service import PermissionService
 
 def test_permission_check_admin():
     service = PermissionService()

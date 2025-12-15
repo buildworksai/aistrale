@@ -1,5 +1,5 @@
 import pytest
-from backend.services.degradation_service import DegradationService
+from services.degradation_service import DegradationService
 
 def test_activate_strategy():
     service = DegradationService()

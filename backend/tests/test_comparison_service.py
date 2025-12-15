@@ -1,5 +1,5 @@
 import pytest
-from backend.services.comparison_service import ComparisonService
+from services.comparison_service import ComparisonService
 
 def test_compare_providers_latency():
     service = ComparisonService()

@@ -3,7 +3,7 @@
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlmodel import Session, select
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from core.database import get_session
 from api.deps import get_current_user_id
@@ -30,8 +30,7 @@ class EvaluationRead(BaseModel):
     updated_at: str
     user_id: Optional[int]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=List[EvaluationRead])

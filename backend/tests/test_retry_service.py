@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from backend.services.retry_service import RetryService
+from services.retry_service import RetryService
 
 @pytest.mark.asyncio
 async def test_retry_success():

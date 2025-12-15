@@ -1,5 +1,5 @@
 import pytest
-from backend.services.model_abstraction_service import ModelAbstractionService
+from services.model_abstraction_service import ModelAbstractionService
 
 def test_resolve_default():
     service = ModelAbstractionService()

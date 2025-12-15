@@ -1,5 +1,5 @@
 import pytest
-from backend.services.queue_service import QueueService
+from services.queue_service import QueueService
 
 @pytest.mark.asyncio
 async def test_enqueue_dequeue_priority():

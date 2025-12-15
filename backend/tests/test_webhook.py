@@ -2,8 +2,8 @@ import pytest
 import json
 import logging
 from unittest.mock import AsyncMock, patch
-from backend.services.webhook_service import WebhookService
-from backend.models.webhook import Webhook
+from services.webhook_service import WebhookService
+from models.webhook import Webhook
 
 @pytest.mark.asyncio
 async def test_dispatch_event_success():

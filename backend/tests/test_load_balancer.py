@@ -1,6 +1,6 @@
 import pytest
 from collections import Counter
-from backend.services.load_balancer_service import LoadBalancerService
+from services.load_balancer_service import LoadBalancerService
 
 def test_round_robin():
     service = LoadBalancerService()
