@@ -61,6 +61,16 @@ jobs:
         PGPASSWORD=password psql -h localhost -U user -d huggingface_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
       continue-on-error: true
 
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
+      env:
+        DATABASE_URL: postgresql://user:password@localhost:5432/huggingface_db
+        SECRET_KEY: test_secret_key_for_ci
+        ENCRYPTION_KEY: test_encryption_key_for_ci_32_bytes_long_key_123456
+        TESTING: "true"
+
     - name: Run tests with coverage
       run: |
         cd backend
