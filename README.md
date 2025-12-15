@@ -13,7 +13,7 @@
 
 **Enterprise-grade LLM engineering platform with multi-provider support, comprehensive observability, and production-ready reliability.**
 
-[Website](https://aistrale.com) • [Documentation](#-documentation) • [Quick Start](#-quick-start) • [Features](#-features)
+[Website](https://aistrale.com) • [Documentation](#documentation) • [Quick Start](#quick-start) • [Features](#key-features)
 
 ---
 
@@ -550,7 +550,7 @@ Built by [BuildWorks.AI](https://buildworks.ai)
 
 <div align="center">
 
-**[⬆ Back to Top](#-aistrale)**
+**[⬆ Back to Top](#aistrale)**
 
 Built by [BuildWorks.AI](https://buildworks.ai)
 
