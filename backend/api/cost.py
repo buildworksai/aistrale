@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlmodel import Session, select, and_, func
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from core.database import get_session
 from api.deps import get_current_user_id
@@ -34,8 +34,7 @@ class BudgetRead(BaseModel):
     alert_thresholds: Dict[str, Any]
     created_at: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BudgetUpdate(BaseModel):

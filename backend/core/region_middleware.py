@@ -3,7 +3,7 @@ from typing import Callable, Awaitable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from backend.services.region_service import RegionService
+from services.region_service import RegionService
 
 logger = logging.getLogger(__name__)
 
