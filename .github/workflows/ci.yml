@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       db:
-        image: postgres:15
+        image: pgvector/pgvector:pg17
         env:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
@@ -43,14 +43,33 @@ jobs:
         pip install .[test]
         pip install pytest-cov httpx
 
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Wait for database
+      run: |
+        until pg_isready -h localhost -p 5432 -U user; do
+          echo "Waiting for database..."
+          sleep 2
+        done
+        echo "Database is ready!"
+
+    - name: Setup database extensions
+      run: |
+        PGPASSWORD=password psql -h localhost -U user -d huggingface_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
+      continue-on-error: true
+
     - name: Run tests with coverage
       run: |
         cd backend
         python -m pytest --cov=. --cov-report=xml --cov-fail-under=80
       env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/huggingface_test_db
+        DATABASE_URL: postgresql://user:password@localhost:5432/huggingface_db
         REDIS_URL: redis://localhost:6379/0
-        SECRET_KEY: test_secret_key
+        SECRET_KEY: test_secret_key_for_ci
+        ENCRYPTION_KEY: test_encryption_key_for_ci_32_bytes_long_key_123456
         TESTING: "true"
 
     - name: Upload coverage reports to Codecov
