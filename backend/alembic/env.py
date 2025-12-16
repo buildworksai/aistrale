@@ -27,8 +27,14 @@ if config.config_file_name is not None:
 target_metadata = SQLModel.metadata
 
 # Override sqlalchemy.url with environment variable
-settings = get_settings()
-config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+# Try to get settings, but fall back to environment variable if settings fail
+try:
+    settings = get_settings()
+    database_url = str(settings.DATABASE_URL)
+except Exception:
+    # Fallback to environment variable directly if settings fail
+    database_url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+config.set_main_option("sqlalchemy.url", database_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
