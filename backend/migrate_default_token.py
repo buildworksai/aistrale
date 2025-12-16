@@ -7,8 +7,7 @@ def migrate():
     with Session(engine) as session:
         try:
             session.exec(
-                text("ALTER TABLE token ADD COLUMN is_default BOOLEAN DEFAULT FALSE")
-            )
+                text("ALTER TABLE token ADD COLUMN is_default BOOLEAN DEFAULT FALSE"))
             session.commit()
             print("Migration successful: Added is_default column to token table.")
         except Exception as e:

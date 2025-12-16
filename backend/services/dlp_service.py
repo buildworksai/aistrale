@@ -17,9 +17,8 @@ class DLPService:
     Combines PII detection with custom regex rules to permit/block/redact content.
     """
 
-    def __init__(
-        self, pii_service: PIIDetectionService, session: Optional[Session] = None
-    ):
+    def __init__(self, pii_service: PIIDetectionService,
+                 session: Optional[Session] = None):
         self.pii_service = pii_service
         self.session = session
         self._rules_cache: Optional[List[DLPRule]] = None
@@ -77,27 +76,29 @@ class DLPService:
         # 1. Check custom rules
         rules = self._load_rules()
         sorted_rules = sorted(rules, key=lambda r: r.priority, reverse=True)
-        
+
         for rule in sorted_rules:
             if not rule.is_active:
                 continue
-                
+
             matches = re.finditer(rule.pattern, processed_text)
             found = False
-            
+
             # Simple check if any match exists to flag action
             # For redaction, we need to substitute.
             if rule.action == DLPAction.BLOCK:
                 if re.search(rule.pattern, processed_text):
                     is_blocked = True
                     violations.append(f"Blocked by rule: {rule.name}")
-                    return True, text, violations # Immediate block
+                    return True, text, violations  # Immediate block
 
             elif rule.action == DLPAction.REDACT:
                 if re.search(rule.pattern, processed_text):
-                     # Replace with <REDACTED: RuleName>
-                     processed_text = re.sub(rule.pattern, f"<REDACTED:{rule.name}>", processed_text)
-                     violations.append(f"Redacted by rule: {rule.name}")
+                    # Replace with <REDACTED: RuleName>
+                    processed_text = re.sub(
+                        rule.pattern, f"<REDACTED:{rule.name}>", processed_text
+                    )
+                    violations.append(f"Redacted by rule: {rule.name}")
 
             elif rule.action == DLPAction.WARN:
                 if re.search(rule.pattern, processed_text):

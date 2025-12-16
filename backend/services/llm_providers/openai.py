@@ -13,7 +13,7 @@ class OpenAIProvider(LLMProvider):
     def __init__(self, token: str, **kwargs):
         """
         Initialize OpenAI provider.
-        
+
         Args:
             token: OpenAI API key
             **kwargs: Additional parameters
@@ -22,17 +22,17 @@ class OpenAIProvider(LLMProvider):
         self.client = AsyncOpenAI(api_key=token)
 
     async def run_inference(
-        self,
-        model: str,
-        input_text: str,
-        history: Optional[list] = None,
-        **kwargs
-    ) -> InferenceResult:
+            self,
+            model: str,
+            input_text: str,
+            history: Optional[list] = None,
+            **kwargs) -> InferenceResult:
         """Run OpenAI inference."""
         history = history or []
         target_model = model if model and model != "auto" else "gpt-3.5-turbo"
 
-        messages = [{"role": "system", "content": "You are a helpful assistant."}]
+        messages = [{"role": "system",
+                     "content": "You are a helpful assistant."}]
         for msg in history:
             messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": input_text})
@@ -40,7 +40,7 @@ class OpenAIProvider(LLMProvider):
         response = await self.client.chat.completions.create(
             model=target_model, messages=messages
         )
-        
+
         result = response.choices[0].message.content
         input_tokens = response.usage.prompt_tokens if response.usage else None
         output_tokens = response.usage.completion_tokens if response.usage else None
@@ -62,11 +62,10 @@ class OpenAIProvider(LLMProvider):
             "gpt-3.5-turbo": {"input": 0.5, "output": 1.5},
             "gpt-3.5-turbo-16k": {"input": 3.0, "output": 4.0},
         }
-        
+
         # Default to gpt-3.5-turbo pricing if model not found
         return pricing.get(model, {"input": 0.5, "output": 1.5})
 
     def get_provider_name(self) -> str:
         """Get provider name."""
         return "openai"
-

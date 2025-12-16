@@ -158,4 +158,3 @@ def delete_workspace(
         workspace_id=workspace_id,
         user_id=user_id,
     )
-

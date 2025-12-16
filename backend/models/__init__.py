@@ -52,7 +52,7 @@ __all__ = [
     "Workspace",
     "Project",
     "Permission",
-    "DLPRule", 
+    "DLPRule",
     "DLPAction",
     "ProviderPerformance",
     "RoutingRule",

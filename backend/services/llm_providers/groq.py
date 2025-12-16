@@ -13,7 +13,7 @@ class GroqProvider(LLMProvider):
     def __init__(self, token: str, **kwargs):
         """
         Initialize Groq provider.
-        
+
         Args:
             token: Groq API key
             **kwargs: Additional parameters
@@ -22,19 +22,17 @@ class GroqProvider(LLMProvider):
         self.client = AsyncGroq(api_key=token)
 
     async def run_inference(
-        self,
-        model: str,
-        input_text: str,
-        history: Optional[list] = None,
-        **kwargs
-    ) -> InferenceResult:
+            self,
+            model: str,
+            input_text: str,
+            history: Optional[list] = None,
+            **kwargs) -> InferenceResult:
         """Run Groq inference."""
         history = history or []
-        target_model = (
-            model if model and model != "auto" else "llama-3.3-70b-versatile"
-        )
+        target_model = model if model and model != "auto" else "llama-3.3-70b-versatile"
 
-        messages = [{"role": "system", "content": "You are a helpful assistant."}]
+        messages = [{"role": "system",
+                     "content": "You are a helpful assistant."}]
         for msg in history:
             messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": input_text})
@@ -48,7 +46,7 @@ class GroqProvider(LLMProvider):
         full_content = []
         input_tokens = None
         output_tokens = None
-        
+
         async for chunk in stream:
             content = chunk.choices[0].delta.content
             if content:
@@ -86,11 +84,10 @@ class GroqProvider(LLMProvider):
             "mixtral-8x7b-32768": {"input": 0.24, "output": 0.24},
             "gemma-7b-it": {"input": 0.07, "output": 0.07},
         }
-        
+
         # Default pricing if model not found
         return pricing.get(model, {"input": 0.1, "output": 0.1})
 
     def get_provider_name(self) -> str:
         """Get provider name."""
         return "groq"
-

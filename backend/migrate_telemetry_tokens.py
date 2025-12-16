@@ -6,8 +6,7 @@ from core.database import engine
 def migrate():
     with Session(engine) as session:
         session.exec(
-            text("ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS input_tokens INTEGER;")
-        )
+            text("ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS input_tokens INTEGER;"))
         session.exec(
             text(
                 "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS output_tokens INTEGER;"

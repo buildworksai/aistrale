@@ -11,11 +11,11 @@ class PricingService:
     def get_pricing(provider: str, model: str) -> Dict[str, float]:
         """
         Get pricing per 1M tokens for a provider/model.
-        
+
         Args:
             provider: Provider name (huggingface, openai, groq, anthropic, gemini)
             model: Model identifier
-            
+
         Returns:
             Dict with 'input' and 'output' keys representing price per 1M tokens
         """
@@ -37,13 +37,13 @@ class PricingService:
     ) -> float:
         """
         Calculate cost in USD.
-        
+
         Args:
             provider: Provider name
             model: Model identifier
             input_tokens: Number of input tokens
             output_tokens: Number of output tokens
-            
+
         Returns:
             Cost in USD
         """
@@ -51,11 +51,9 @@ class PricingService:
             return 0.0
 
         pricing = PricingService.get_pricing(provider, model)
-        
-        cost = (
-            (input_tokens / 1_000_000 * pricing["input"])
-            + (output_tokens / 1_000_000 * pricing["output"])
-        )
-        
-        return cost
 
+        cost = (input_tokens / 1_000_000 * pricing["input"]) + (
+            output_tokens / 1_000_000 * pricing["output"]
+        )
+
+        return cost

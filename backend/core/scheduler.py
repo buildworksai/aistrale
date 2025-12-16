@@ -23,19 +23,19 @@ def setup_scheduled_jobs():
         name="Rotate encryption key quarterly",
         replace_existing=True,
     )
-    
+
     logger.info("scheduled_jobs_setup", jobs=["rotate_encryption_key"])
 
 
 def rotate_encryption_key_job():
     """Scheduled job to rotate encryption key."""
     logger.info("key_rotation_job_started")
-    
+
     try:
         with Session(engine) as session:
             rotation_service = KeyRotationService(session)
             new_key_id, re_encrypted_count = rotation_service.rotate_key()
-            
+
             logger.info(
                 "key_rotation_job_completed",
                 new_key_id=new_key_id,
@@ -60,4 +60,3 @@ def shutdown_scheduler():
     """Shutdown the scheduler."""
     scheduler.shutdown()
     logger.info("scheduler_shutdown")
-

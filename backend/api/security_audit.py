@@ -3,13 +3,12 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select, and_, desc
 
 from core.database import get_session
-from api.deps import get_current_user_id, require_admin
+from api.deps import require_admin
 from models.security_audit import SecurityAudit, SecurityAuditRead
-from models.user import User
 
 router = APIRouter()
 
@@ -27,7 +26,7 @@ def list_audit_events(
 ) -> list[SecurityAudit]:
     """
     List security audit events (admin only).
-    
+
     Args:
         event_type: Filter by event type
         target_user_id: Filter by user ID
@@ -37,7 +36,7 @@ def list_audit_events(
         offset: Offset for pagination
     """
     query = select(SecurityAudit)
-    
+
     # Apply filters
     conditions = []
     if event_type:
@@ -48,16 +47,15 @@ def list_audit_events(
         conditions.append(SecurityAudit.created_at >= start_date)
     if end_date:
         conditions.append(SecurityAudit.created_at <= end_date)
-    
+
     if conditions:
         query = query.where(and_(*conditions))
-    
+
     # Order by created_at descending
     query = query.order_by(desc(SecurityAudit.created_at))
-    
+
     # Apply pagination
     query = query.limit(limit).offset(offset)
-    
+
     events = session.exec(query).all()
     return events
-

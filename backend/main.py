@@ -1,3 +1,18 @@
+from api import (
+    multi_provider,
+    reliability,
+    webhooks,
+    security_audit,
+    dlp,
+    cost,
+    compliance,
+    workspaces,
+    projects,
+    permissions,
+    regions,
+    evaluation,
+)
+from api import admin
 import uuid
 from contextlib import asynccontextmanager
 
@@ -51,15 +66,18 @@ async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events."""
     # Startup
     logger.info("application_starting")
-    
+
     # Run Alembic migrations
     try:
         alembic_cfg = Config("alembic.ini")
         # Ensure we use the correct database URL
-        alembic_cfg.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+        alembic_cfg.set_main_option(
+            "sqlalchemy.url", str(
+                settings.DATABASE_URL))
         # Check for multiple heads and upgrade to all heads if needed
         try:
             from alembic import script
+
             script_dir = script.ScriptDirectory.from_config(alembic_cfg)
             heads = script_dir.get_revisions("heads")
             if len(heads) > 1:
@@ -91,20 +109,22 @@ async def lifespan(app: FastAPI):
                 logger.info("admin_user_seeded")
     except Exception as e:
         logger.error("admin_seed_failed", error=str(e))
-    
+
     # Start scheduler
     try:
         from core.scheduler import start_scheduler
+
         start_scheduler()
         logger.info("scheduler_started")
     except Exception as e:
         logger.error("scheduler_start_failed", error=str(e))
-    
+
     yield
-    
+
     # Shutdown
     logger.info("application_shutting_down")
     from core.scheduler import shutdown_scheduler
+
     shutdown_scheduler()
     logger.info("scheduler_shutdown")
 
@@ -118,7 +138,8 @@ Instrumentator().instrument(app).expose(app)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS configuration - allow frontend origin (must be defined FIRST so it runs LAST and processes all responses)
+# CORS configuration - allow frontend origin (must be defined FIRST so it
+# runs LAST and processes all responses)
 origins = [
     "http://localhost:16500",
     "http://localhost:3000",
@@ -128,6 +149,17 @@ origins = [
 
 # Security Middleware (added first, runs last - outermost)
 app.add_middleware(SecurityHeadersMiddleware)
+
+# Middleware to ensure request.state.view_rate_limit exists for SlowAPIMiddleware
+# This must run BEFORE SlowAPIMiddleware (added after, so it runs before)
+@app.middleware("http")
+async def slowapi_state_middleware(request: Request, call_next):
+    """Ensure request.state.view_rate_limit exists for SlowAPIMiddleware."""
+    if not hasattr(request.state, 'view_rate_limit'):
+        request.state.view_rate_limit = {}
+    response = await call_next(request)
+    return response
+
 app.add_middleware(SlowAPIMiddleware)
 
 # Configure Tracing
@@ -138,6 +170,7 @@ if settings.JAEGER_ENABLED:
         # Log error but don't crash app if tracing fails
         logger.error("tracing_setup_failed", error=str(e))
 
+
 # CORS fallback middleware - handles OPTIONS and ensures CORS headers on all responses
 # Added before CORS middleware so it runs after (innermost)
 @app.middleware("http")
@@ -147,17 +180,16 @@ async def cors_fallback_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         origin = request.headers.get("origin")
         if origin in origins:
-            response = JSONResponse(
-                status_code=200,
-                content={}
-            )
+            response = JSONResponse(status_code=200, content={})
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Methods"] = (
+                "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            )
             response.headers["Access-Control-Allow-Headers"] = "*"
             response.headers["Access-Control-Max-Age"] = "3600"
             return response
-    
+
     try:
         response = await call_next(request)
         # Ensure CORS headers are present even if middleware didn't add them
@@ -168,18 +200,13 @@ async def cors_fallback_middleware(request: Request, call_next):
                 response.headers["Access-Control-Allow-Credentials"] = "true"
         return response
     except Exception as e:
-        # Create error response with CORS headers
-        error_response = JSONResponse(
-            status_code=500,
-            content={"detail": "Internal server error"}
-        )
-        origin = request.headers.get("origin")
-        if origin in origins:
-            error_response.headers["Access-Control-Allow-Origin"] = origin
-            error_response.headers["Access-Control-Allow-Credentials"] = "true"
-        return error_response
+        # Re-raise exception so exception handlers can process it
+        # Exception handlers will add CORS headers
+        raise
 
-# CORS middleware - added LAST so it runs FIRST (innermost, processes requests first)
+
+# CORS middleware - added LAST so it runs FIRST (innermost, processes
+# requests first)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -188,6 +215,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
@@ -228,13 +256,13 @@ async def api_exception_handler(request: Request, exc: BaseAPIException):
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Handle HTTP exceptions (401, 403, etc.) with CORS headers."""
     response = JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail}
-    )
+        status_code=exc.status_code, content={
+            "detail": exc.detail})
     # Add CORS headers to error responses
     origin = request.headers.get("origin")
     if origin in origins:
@@ -242,14 +270,35 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
+
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle all unhandled exceptions (500 errors) with CORS headers."""
+    import traceback
+    import sys
+    import os
+
+    # In testing, include the actual error message for debugging
+    # Check environment variable directly to avoid cached settings issue
+    is_testing = os.getenv(
+        "TESTING",
+        "false").lower() == "true" or settings.TESTING
+    # Always include error details in test mode for debugging
+    error_detail = f"{type(exc).__name__}: {str(exc)}" if is_testing else "Internal server error"
+    if is_testing:
+        # Print full traceback in testing for debugging
+        print(f"\n=== EXCEPTION IN TESTING MODE ===", file=sys.stderr)
+        print(f"Type: {type(exc).__name__}", file=sys.stderr)
+        print(f"Message: {str(exc)}", file=sys.stderr)
+        traceback.print_exception(
+            type(exc),
+            exc,
+            exc.__traceback__,
+            file=sys.stderr)
+        print("===================================\n", file=sys.stderr)
+
     logger.error("unhandled_exception", error=str(exc), exc_info=True)
-    response = JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+    response = JSONResponse(status_code=500, content={"detail": error_detail})
     # Add CORS headers to error responses
     origin = request.headers.get("origin")
     if origin in origins:
@@ -272,31 +321,56 @@ app.add_middleware(
 )
 
 
-
-
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(tokens.router, prefix="/api/tokens", tags=["tokens"])
-app.include_router(inference.router, prefix="/api/inference", tags=["inference"])
+app.include_router(
+    inference.router,
+    prefix="/api/inference",
+    tags=["inference"])
 app.include_router(prompts.router, prefix="/api/prompts", tags=["prompts"])
-app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"])
-from api import admin
+app.include_router(
+    telemetry.router,
+    prefix="/api/telemetry",
+    tags=["telemetry"])
+
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # New Feature Routers
-from api import multi_provider, reliability, webhooks, security_audit, dlp, cost, compliance, workspaces, projects, permissions, regions, evaluation
-app.include_router(multi_provider.router, prefix="/api/multi-provider", tags=["Multi-Provider"])
-app.include_router(reliability.router, prefix="/api/reliability", tags=["Reliability"])
+
+app.include_router(
+    multi_provider.router,
+    prefix="/api/multi-provider",
+    tags=["Multi-Provider"])
+app.include_router(
+    reliability.router,
+    prefix="/api/reliability",
+    tags=["Reliability"])
 app.include_router(webhooks.router, prefix="/api/webhooks", tags=["Webhooks"])
-app.include_router(security_audit.router, prefix="/api/security-audit", tags=["Security Audit"])
+app.include_router(
+    security_audit.router,
+    prefix="/api/security-audit",
+    tags=["Security Audit"])
 app.include_router(dlp.router, prefix="/api/dlp", tags=["DLP"])
 app.include_router(cost.router, prefix="/api/cost", tags=["Cost"])
-app.include_router(compliance.router, prefix="/api/compliance", tags=["Compliance"])
-app.include_router(workspaces.router, prefix="/api/workspaces", tags=["Workspaces"])
+app.include_router(
+    compliance.router,
+    prefix="/api/compliance",
+    tags=["Compliance"])
+app.include_router(
+    workspaces.router,
+    prefix="/api/workspaces",
+    tags=["Workspaces"])
 app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
-app.include_router(permissions.router, prefix="/api/permissions", tags=["Permissions"])
+app.include_router(
+    permissions.router,
+    prefix="/api/permissions",
+    tags=["Permissions"])
 app.include_router(regions.router, prefix="/api/regions", tags=["Regions"])
-app.include_router(evaluation.router, prefix="/api/evaluation", tags=["Evaluation"])
+app.include_router(
+    evaluation.router,
+    prefix="/api/evaluation",
+    tags=["Evaluation"])
 
 
 @app.get("/")

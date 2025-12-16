@@ -6,20 +6,32 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from core.config import get_settings
 
 
 def configure_tracing(app, service_name="backend"):
-    resource = Resource(attributes={"service.name": service_name})
+    settings = get_settings()
 
-    trace.set_tracer_provider(TracerProvider(resource=resource))
-    tracer_provider = trace.get_tracer_provider()
+    # Skip tracing setup if disabled or in testing
+    if not settings.JAEGER_ENABLED or settings.TESTING:
+        return
 
-    otlp_exporter = OTLPSpanExporter(endpoint="http://jaeger:4318/v1/traces")
-    span_processor = BatchSpanProcessor(otlp_exporter)
-    tracer_provider.add_span_processor(span_processor)
+    try:
+        resource = Resource(attributes={"service.name": service_name})
 
-    FastAPIInstrumentor().instrument_app(app)
+        trace.set_tracer_provider(TracerProvider(resource=resource))
+        tracer_provider = trace.get_tracer_provider()
 
-    # Instrument HTTP clients for LLM calls
-    RequestsInstrumentor().instrument()
-    HTTPXClientInstrumentor().instrument()
+        otlp_exporter = OTLPSpanExporter(
+            endpoint="http://jaeger:4318/v1/traces")
+        span_processor = BatchSpanProcessor(otlp_exporter)
+        tracer_provider.add_span_processor(span_processor)
+
+        FastAPIInstrumentor().instrument_app(app)
+
+        # Instrument HTTP clients for LLM calls
+        RequestsInstrumentor().instrument()
+        HTTPXClientInstrumentor().instrument()
+    except Exception:
+        # Silently fail if tracing setup fails (e.g., Jaeger not available)
+        pass

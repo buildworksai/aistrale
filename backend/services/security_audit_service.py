@@ -15,7 +15,7 @@ def log_security_event(
 ) -> SecurityAudit:
     """
     Log a security event.
-    
+
     Args:
         session: Database session
         event_type: Type of event (login_success, login_failure, token_created, etc.)
@@ -23,7 +23,7 @@ def log_security_event(
         user_id: Optional user ID
         user_agent: Optional user agent string
         details: Optional additional details as dict
-        
+
     Returns:
         Created SecurityAudit record
     """
@@ -38,4 +38,3 @@ def log_security_event(
     session.commit()
     session.refresh(audit)
     return audit
-

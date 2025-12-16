@@ -1,7 +1,7 @@
 """Compliance reporting service."""
 
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any
 import csv
 import io
 import logging
@@ -22,7 +22,10 @@ class ComplianceService:
     def __init__(self, session: Session):
         self.session = session
 
-    def generate_soc2_report(self, start_date: datetime, end_date: datetime) -> str:
+    def generate_soc2_report(
+            self,
+            start_date: datetime,
+            end_date: datetime) -> str:
         """
         Generates a simplified SOC 2 report (Access Logs) in CSV format.
         """
@@ -80,7 +83,8 @@ class ComplianceService:
         telemetry_records = self.session.exec(telemetry_query).all()
 
         # Get user's audit logs
-        audit_query = select(SecurityAudit).where(SecurityAudit.user_id == user_id)
+        audit_query = select(SecurityAudit).where(
+            SecurityAudit.user_id == user_id)
         audit_logs = self.session.exec(audit_query).all()
 
         return {
@@ -93,7 +97,9 @@ class ComplianceService:
                     "name": user.name,
                     "role": user.role,
                     "is_active": user.is_active,
-                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                    "created_at": (
+                        user.created_at.isoformat() if user.created_at else None
+                    ),
                 },
                 "telemetry_records": [
                     {
@@ -102,7 +108,9 @@ class ComplianceService:
                         "provider": record.sdk,
                         "tokens": record.tokens,
                         "cost": record.cost,
-                        "created_at": record.created_at.isoformat() if record.created_at else None,
+                        "created_at": (
+                            record.created_at.isoformat() if record.created_at else None
+                        ),
                     }
                     for record in telemetry_records
                 ],
@@ -112,7 +120,9 @@ class ComplianceService:
                         "event_type": log.event_type,
                         "ip_address": log.ip_address,
                         "user_agent": log.user_agent,
-                        "created_at": log.created_at.isoformat() if log.created_at else None,
+                        "created_at": (
+                            log.created_at.isoformat() if log.created_at else None
+                        ),
                         "details": log.details,
                     }
                     for log in audit_logs

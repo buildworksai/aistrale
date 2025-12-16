@@ -13,32 +13,40 @@ settings = get_settings()
 def get_active_encryption_key(session=None) -> tuple[str, str]:
     """
     Get the active encryption key.
-    
+
     Args:
         session: Optional database session
-        
+
     Returns:
         Tuple of (key_id, key_value)
     """
     # Try to get active key from database if session provided
-    if session and hasattr(session, 'exec'):
+    if session and hasattr(session, "exec"):
         try:
             active_key = session.exec(
-                select(EncryptionKey).where(EncryptionKey.is_active == True)  # noqa: E712
+                select(EncryptionKey).where(
+                    EncryptionKey.is_active == True
+                )  # noqa: E712
             ).first()
-            
+
             if active_key:
                 # Decrypt the key using master key
                 master_key = settings.ENCRYPTION_KEY.encode()
                 master_cipher = Fernet(master_key)
-                decrypted_key = master_cipher.decrypt(active_key.encrypted_key.encode()).decode()
+                decrypted_key = master_cipher.decrypt(
+                    active_key.encrypted_key.encode()
+                ).decode()
                 return (active_key.key_id, decrypted_key)
         except Exception:
             # If database lookup fails, fall back to environment variable
             pass
-    
+
     # Fallback to environment variable for backward compatibility
-    key = settings.ENCRYPTION_KEY if settings.ENCRYPTION_KEY else Fernet.generate_key().decode()
+    key = (
+        settings.ENCRYPTION_KEY
+        if settings.ENCRYPTION_KEY
+        else Fernet.generate_key().decode()
+    )
     return ("legacy", key)
 
 
@@ -62,21 +70,23 @@ class Token(SQLModel, table=True):
     def get_token_value(self, session) -> str:
         """Decrypt token using the key_id (requires session)."""
         key_id, key_value = get_active_encryption_key(session)
-        
+
         # If key_id doesn't match, try to find the correct key
         if self.key_id != key_id and self.key_id != "legacy":
             # Look up the key by key_id
             key_record = session.exec(
-                select(EncryptionKey).where(EncryptionKey.key_id == self.key_id)
-            ).first()
+                select(EncryptionKey).where(
+                    EncryptionKey.key_id == self.key_id)).first()
             if key_record:
                 master_key = settings.ENCRYPTION_KEY.encode()
                 master_cipher = Fernet(master_key)
-                key_value = master_cipher.decrypt(key_record.encrypted_key.encode()).decode()
-        
+                key_value = master_cipher.decrypt(
+                    key_record.encrypted_key.encode()
+                ).decode()
+
         cipher = Fernet(key_value.encode())
         return cipher.decrypt(self.encrypted_token.encode()).decode()
-    
+
     @property
     def token_value(self) -> str:
         """Decrypt token (backward compatibility - uses active key)."""
@@ -86,11 +96,13 @@ class Token(SQLModel, table=True):
         cipher = Fernet(key_value.encode())
         return cipher.decrypt(self.encrypted_token.encode()).decode()
 
+
 class TokenCreate(SQLModel):
     provider: str
     token_value: str
     label: str
     is_default: bool = False
+
 
 class TokenRead(SQLModel):
     id: int
@@ -100,5 +112,5 @@ class TokenRead(SQLModel):
     is_default: bool
     created_at: datetime
     # We generally don't return the token value for security, or maybe masked?
-    # But if the user needs to see it once, we might return it. 
+    # But if the user needs to see it once, we might return it.
     # For now, let's NOT return the token value in the list.

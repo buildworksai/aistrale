@@ -28,7 +28,7 @@ def upgrade() -> None:
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     tables = inspector.get_table_names()
-    
+
     # Create user table if it doesn't exist (base table for foreign keys)
     if "user" not in tables:
         op.create_table(
@@ -37,12 +37,22 @@ def upgrade() -> None:
             sa.Column("email", sa.String(), nullable=False),
             sa.Column("password_hash", sa.String(), nullable=False),
             sa.Column("role", sa.String(), nullable=False, server_default="user"),
-            sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("true")),
-            sa.Column("created_at", postgresql.TIMESTAMP(), nullable=False, server_default=sa.text("(now() AT TIME ZONE 'utc'::text)")),
+            sa.Column(
+                "is_active",
+                sa.Boolean(),
+                nullable=False,
+                server_default=sa.text("true"),
+            ),
+            sa.Column(
+                "created_at",
+                postgresql.TIMESTAMP(),
+                nullable=False,
+                server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
+            ),
             sa.PrimaryKeyConstraint("id"),
         )
         op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
-    
+
     # Create token table if it doesn't exist
     if "token" not in tables:
         op.create_table(
@@ -52,12 +62,22 @@ def upgrade() -> None:
             sa.Column("provider", sa.String(), nullable=False),
             sa.Column("encrypted_token", sa.String(), nullable=False),
             sa.Column("label", sa.String(), nullable=False),
-            sa.Column("is_default", sa.Boolean(), nullable=False, server_default=sa.text("false")),
-            sa.Column("created_at", postgresql.TIMESTAMP(), nullable=False, server_default=sa.text("(now() AT TIME ZONE 'utc'::text)")),
+            sa.Column(
+                "is_default",
+                sa.Boolean(),
+                nullable=False,
+                server_default=sa.text("false"),
+            ),
+            sa.Column(
+                "created_at",
+                postgresql.TIMESTAMP(),
+                nullable=False,
+                server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
+            ),
             sa.ForeignKeyConstraint(["user_id"], ["user.id"]),
             sa.PrimaryKeyConstraint("id"),
         )
-    
+
     # Create telemetry table if it doesn't exist
     # Note: cost and prompt_id are added by later migration de9c1517c9c5
     if "telemetry" not in tables:
@@ -71,13 +91,18 @@ def upgrade() -> None:
             sa.Column("execution_time_ms", sa.Float(), nullable=False),
             sa.Column("status", sa.String(), nullable=False),
             sa.Column("error_message", sa.String(), nullable=True),
-            sa.Column("timestamp", postgresql.TIMESTAMP(), nullable=False, server_default=sa.text("(now() AT TIME ZONE 'utc'::text)")),
+            sa.Column(
+                "timestamp",
+                postgresql.TIMESTAMP(),
+                nullable=False,
+                server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
+            ),
             sa.Column("input_tokens", sa.Integer(), nullable=True),
             sa.Column("output_tokens", sa.Integer(), nullable=True),
             sa.ForeignKeyConstraint(["user_id"], ["user.id"]),
             sa.PrimaryKeyConstraint("id"),
         )
-    
+
     if "chatmessage" in tables:
         # Table exists, alter it
         op.alter_column(
@@ -100,18 +125,23 @@ def upgrade() -> None:
         fk_constraint = []
         if "user" in tables:
             fk_constraint = [sa.ForeignKeyConstraint(["user_id"], ["user.id"])]
-        
+
         op.create_table(
             "chatmessage",
             sa.Column("id", sa.Integer(), nullable=False),
             sa.Column("user_id", sa.Integer(), nullable=False),
             sa.Column("role", sa.String(), nullable=False),
             sa.Column("content", sa.String(), nullable=False),
-            sa.Column("created_at", postgresql.TIMESTAMP(), nullable=False, server_default=sa.text("(now() AT TIME ZONE 'utc'::text)")),
+            sa.Column(
+                "created_at",
+                postgresql.TIMESTAMP(),
+                nullable=False,
+                server_default=sa.text("(now() AT TIME ZONE 'utc'::text)"),
+            ),
             *fk_constraint,
             sa.PrimaryKeyConstraint("id"),
         )
-    
+
     # Ensure token.is_default has correct default
     if "token" in tables:
         columns = [col["name"] for col in inspector.get_columns("token")]

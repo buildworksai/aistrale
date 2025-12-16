@@ -1,22 +1,24 @@
 import logging
-import asyncio
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from models.reliability import RequestQueue
 
 logger = logging.getLogger(__name__)
 
+
 class QueueService:
     """
     Simulation of a Redis-backed request queue using in-memory list.
     """
-    
+
     def __init__(self):
         # Simulated persistence
-        self._queue = [] 
-        self._db_mirror = {} # Dictionary simulation of DB for ID lookup
+        self._queue = []
+        self._db_mirror = {}  # Dictionary simulation of DB for ID lookup
 
-    async def enqueue(self, request_data: Dict[str, Any], priority: int = 1) -> RequestQueue:
+    async def enqueue(
+        self, request_data: Dict[str, Any], priority: int = 1
+    ) -> RequestQueue:
         """
         Add a request to the queue.
         """
@@ -25,17 +27,17 @@ class QueueService:
             id=len(self._db_mirror) + 1,
             request_data=request_data,
             priority=priority,
-            status="pending"
+            status="pending",
         )
         self._db_mirror[record.id] = record
-        
+
         # Add to in-memory queue (simple list for demo)
         # In reality, this would be `redis.lpush`
         self._queue.append(record)
-        
+
         # Sort by priority (0 is highest)
         self._queue.sort(key=lambda x: x.priority)
-        
+
         logger.info(f"Enqueued request {record.id} with priority {priority}")
         return record
 
@@ -45,7 +47,7 @@ class QueueService:
         """
         if not self._queue:
             return None
-        
+
         # Pop highest priority (first element due to sort)
         record = self._queue.pop(0)
         record.status = "processing"
@@ -74,15 +76,19 @@ class QueueService:
         """
         Get queue metrics.
         """
-        pending = sum(1 for r in self._db_mirror.values() if r.status == "pending")
-        processing = sum(1 for r in self._db_mirror.values() if r.status == "processing")
-        completed = sum(1 for r in self._db_mirror.values() if r.status == "completed")
-        
+        pending = sum(1 for r in self._db_mirror.values()
+                      if r.status == "pending")
+        processing = sum(
+            1 for r in self._db_mirror.values() if r.status == "processing"
+        )
+        completed = sum(1 for r in self._db_mirror.values()
+                        if r.status == "completed")
+
         return {
             "total_pending": pending,
             "total_processing": processing,
             "total_completed": completed,
             "avg_wait_time": 0.0,
             "avg_processing_time": 0.0,
-            "queue_depth": len(self._queue)
+            "queue_depth": len(self._queue),
         }

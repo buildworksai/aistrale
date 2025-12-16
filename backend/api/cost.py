@@ -1,15 +1,18 @@
 """Cost optimization API endpoints."""
 
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from sqlmodel import Session, select, and_, func
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, Request, Query
+from sqlmodel import Session, select, and_
 from pydantic import BaseModel, ConfigDict
 
 from core.database import get_session
 from api.deps import get_current_user_id
 from services.cost_service import CostService
-from models.cost_optimization import Budget, CostForecast, CostAnomaly, OptimizationRecommendation
+from models.cost_optimization import (
+    Budget,
+    OptimizationRecommendation,
+)
 from models.telemetry import Telemetry
 import structlog
 
@@ -84,17 +87,21 @@ def get_budget(
     for i in range(30):
         day_start = start_date + timedelta(days=i)
         day_end = day_start + timedelta(days=1)
-        day_records = [r for r in telemetry_records if day_start <= r.timestamp < day_end]
+        day_records = [
+            r for r in telemetry_records if day_start <= r.timestamp < day_end
+        ]
         daily_costs.append(sum(r.cost or 0.0 for r in day_records))
 
     forecasts = cost_service.forecast_costs(daily_costs, days_ahead=30)
-    total_forecast = sum(f.predicted_cost for f in forecasts) if forecasts else current_spend
+    total_forecast = (sum(f.predicted_cost for f in forecasts)
+                      if forecasts else current_spend)
 
     # Group by provider
     by_provider: Dict[str, float] = {}
     for record in telemetry_records:
         provider = record.sdk or "unknown"
-        by_provider[provider] = by_provider.get(provider, 0.0) + (record.cost or 0.0)
+        by_provider[provider] = by_provider.get(
+            provider, 0.0) + (record.cost or 0.0)
 
     details = [
         {"category": provider, "allocated": 0, "spent": spent}
@@ -146,7 +153,8 @@ def create_budget(
         project_id=budget_data.project_id,
         amount=budget_data.amount,
         period=budget_data.period,
-        alert_thresholds=budget_data.alert_thresholds or {"warning": 80, "critical": 100},
+        alert_thresholds=budget_data.alert_thresholds
+        or {"warning": 80, "critical": 100},
     )
     session.add(budget)
     session.commit()
@@ -189,7 +197,9 @@ def get_cost_forecast(
     for i in range(30):
         day_start = start_date + timedelta(days=i)
         day_end = day_start + timedelta(days=1)
-        day_records = [r for r in telemetry_records if day_start <= r.timestamp < day_end]
+        day_records = [
+            r for r in telemetry_records if day_start <= r.timestamp < day_end
+        ]
         daily_costs.append(sum(r.cost or 0.0 for r in day_records))
 
     forecasts = cost_service.forecast_costs(daily_costs, days_ahead=days_ahead)
@@ -232,7 +242,9 @@ def get_cost_anomalies(
     for i in range(30):
         day_start = start_date + timedelta(days=i)
         day_end = day_start + timedelta(days=1)
-        day_records = [r for r in telemetry_records if day_start <= r.timestamp < day_end]
+        day_records = [
+            r for r in telemetry_records if day_start <= r.timestamp < day_end
+        ]
         daily_costs.append(sum(r.cost or 0.0 for r in day_records))
 
     # Detect anomalies
@@ -264,7 +276,8 @@ def get_optimization_recommendations(
     """Get optimization recommendations."""
     recommendations = session.exec(
         select(OptimizationRecommendation)
-        .where(OptimizationRecommendation.workspace_id == 1)  # For now, use workspace 1
+        # For now, use workspace 1
+        .where(OptimizationRecommendation.workspace_id == 1)
         .order_by(OptimizationRecommendation.potential_savings.desc())
         .limit(limit)
     ).all()
@@ -309,9 +322,4 @@ def get_forecast_accuracy(
     user_id: int = Depends(get_current_user_id),
 ) -> Dict[str, Any]:
     """Get forecast accuracy metrics."""
-    return {
-        "mae": 0.0,
-        "mape": 0.0,
-        "rmse": 0.0,
-        "period": "30d"
-    }
+    return {"mae": 0.0, "mape": 0.0, "rmse": 0.0, "period": "30d"}

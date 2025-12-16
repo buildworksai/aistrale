@@ -72,7 +72,8 @@ def redact_pii(
     user_id: int = Depends(get_current_user_id),
 ) -> RedactResponse:
     """Redact PII from text."""
-    is_blocked, processed_text, violations = dlp_service.scan_content(request.text)
+    is_blocked, processed_text, violations = dlp_service.scan_content(
+        request.text)
 
     logger.info(
         "dlp_scan_completed",
@@ -95,7 +96,9 @@ def list_dlp_rules(
     user_id: int = Depends(get_current_user_id),
 ) -> List[DLPRule]:
     """List all DLP rules."""
-    rules = session.exec(select(DLPRule).order_by(DLPRule.priority.desc())).all()
+    rules = session.exec(
+        select(DLPRule).order_by(
+            DLPRule.priority.desc())).all()
     return rules
 
 
@@ -109,10 +112,13 @@ def create_dlp_rule(
     """Create a new DLP rule (admin only)."""
     # Validate regex pattern
     import re
+
     try:
         re.compile(rule_data.pattern)
     except re.error as e:
-        raise HTTPException(status_code=400, detail=f"Invalid regex pattern: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid regex pattern: {e}")
 
     rule = DLPRule(
         name=rule_data.name,
@@ -167,10 +173,13 @@ def update_dlp_rule(
     if rule_data.pattern:
         # Validate regex pattern
         import re
+
         try:
             re.compile(rule_data.pattern)
         except re.error as e:
-            raise HTTPException(status_code=400, detail=f"Invalid regex pattern: {e}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid regex pattern: {e}")
         rule.pattern = rule_data.pattern
     if rule_data.action:
         rule.action = rule_data.action

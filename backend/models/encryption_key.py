@@ -15,4 +15,3 @@ class EncryptionKey(SQLModel, table=True):
     is_active: bool = Field(default=True, index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     rotated_at: Optional[datetime] = None
-

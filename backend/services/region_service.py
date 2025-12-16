@@ -1,23 +1,23 @@
 import logging
-from typing import List, Optional
+from typing import List
 from models.region import Region, DataRegionConfig
 
 logger = logging.getLogger(__name__)
+
 
 class RegionService:
     """
     Service to manage data residency regions.
     """
-    
+
     def __init__(self):
         # In a real app, this might load from a DB or global config
         self.config = DataRegionConfig(
             allowed_regions=[
-                Region.US_EAST_1, 
-                Region.US_WEST_2, 
-                Region.EU_CENTRAL_1
-            ],
-            default_region=Region.US_EAST_1
+                Region.US_EAST_1,
+                Region.US_WEST_2,
+                Region.EU_CENTRAL_1],
+            default_region=Region.US_EAST_1,
         )
 
     def get_supported_regions(self) -> List[Region]:
@@ -39,4 +39,5 @@ class RegionService:
         Raises ValueError if invalid.
         """
         if not self.is_region_allowed(region_code):
-            raise ValueError(f"Region '{region_code}' is not supported or allowed.")
+            raise ValueError(
+                f"Region '{region_code}' is not supported or allowed.")

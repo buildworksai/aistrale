@@ -8,7 +8,8 @@ def migrate():
         try:
             # Create chatmessage table
             session.exec(
-                text("""
+                text(
+                    """
                 CREATE TABLE IF NOT EXISTS chatmessage (
                     id SERIAL PRIMARY KEY,
                     user_id INTEGER NOT NULL,
@@ -19,7 +20,8 @@ def migrate():
                     ),
                     FOREIGN KEY (user_id) REFERENCES "user" (id)
                 )
-            """)
+            """
+                )
             )
             session.commit()
             print("Migration successful: Created chatmessage table.")

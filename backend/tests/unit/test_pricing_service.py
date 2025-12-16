@@ -15,7 +15,8 @@ class TestPricingService:
 
     def test_get_pricing_anthropic(self):
         """Test Anthropic pricing."""
-        pricing = PricingService.get_pricing("anthropic", "claude-3-5-sonnet-20241022")
+        pricing = PricingService.get_pricing(
+            "anthropic", "claude-3-5-sonnet-20241022")
         assert pricing["input"] == 3.0
         assert pricing["output"] == 15.0
 
@@ -43,7 +44,7 @@ class TestPricingService:
             provider="openai",
             model="gpt-3.5-turbo",
             input_tokens=1000,
-            output_tokens=500
+            output_tokens=500,
         )
         # (1000/1M * 0.5) + (500/1M * 1.5) = 0.0005 + 0.00075 = 0.00125
         assert cost == pytest.approx(0.00125, rel=1e-6)
@@ -54,7 +55,7 @@ class TestPricingService:
             provider="openai",
             model="gpt-3.5-turbo",
             input_tokens=None,
-            output_tokens=None
+            output_tokens=None,
         )
         assert cost == 0.0
 
@@ -64,7 +65,5 @@ class TestPricingService:
             provider="openai",
             model="gpt-3.5-turbo",
             input_tokens=0,
-            output_tokens=0
-        )
+            output_tokens=0)
         assert cost == 0.0
-

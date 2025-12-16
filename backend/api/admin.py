@@ -18,17 +18,17 @@ def rotate_encryption_key(
 ) -> dict:
     """
     Rotate encryption key and re-encrypt all tokens (admin only).
-    
+
     This operation:
     1. Generates a new encryption key
     2. Re-encrypts all tokens with the new key
     3. Deactivates the old key
-    
+
     Returns:
         Status and count of re-encrypted tokens
     """
     rotation_service = KeyRotationService(session)
-    
+
     try:
         new_key_id, re_encrypted_count = rotation_service.rotate_key()
         return {
@@ -38,10 +38,8 @@ def rotate_encryption_key(
             "re_encrypted_tokens": re_encrypted_count,
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Key rotation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500,
+                            detail=f"Key rotation failed: {str(e)}")
 
 
 @router.get("/active-key")
@@ -55,4 +53,3 @@ def get_active_key(
     rotation_service = KeyRotationService(session)
     active_key = rotation_service.get_active_key()
     return active_key
-

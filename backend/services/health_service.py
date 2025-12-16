@@ -6,6 +6,7 @@ from models.multi_provider import ProviderHealth
 
 logger = logging.getLogger(__name__)
 
+
 class HealthService:
     """
     Service to monitor provider health.
@@ -15,7 +16,12 @@ class HealthService:
     def __init__(self):
         # Simulation: store in-memory health stats
         self._health_cache: Dict[str, ProviderHealth] = {}
-        self.providers = ["openai", "anthropic", "together", "google", "mistral"]
+        self.providers = [
+            "openai",
+            "anthropic",
+            "together",
+            "google",
+            "mistral"]
 
     def check_health(self, provider: str) -> ProviderHealth:
         """
@@ -27,7 +33,7 @@ class HealthService:
         status = "healthy"
         latency = random.uniform(200, 800)
         error_rate = 0.0
-        
+
         if r > 0.95:
             status = "down"
             error_rate = 1.0
@@ -44,7 +50,7 @@ class HealthService:
             avg_latency_ms=latency,
             error_rate=error_rate,
             uptime_percentage=uptime,
-            last_check=datetime.utcnow()
+            last_check=datetime.utcnow(),
         )
         self._health_cache[provider] = health
         logger.info(f"Health check for {provider}: {status}")

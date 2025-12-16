@@ -1,52 +1,58 @@
 from unittest.mock import patch, MagicMock
 
-from fastapi.testclient import TestClient
-
-from main import app
 from models.user import User
-from core.database import get_session
-from core.limiter import limiter
 
-# Create a mock session
-mock_session = MagicMock()
-app.dependency_overrides[get_session] = lambda: mock_session
-
-# Mock rate limiter
-mock_limiter = MagicMock()
-def noop_decorator(func):
-    return func
-mock_limiter.limit.return_value = noop_decorator
-app.state.limiter = mock_limiter
-
-client = TestClient(app)
+# Test session data - will be patched into get_session_data
+# This is shared with conftest.py's _test_session_data
+_test_session_data = {}
 
 
 @patch("api.auth.verify_password")
 def test_login_success(mock_verify_password, client, mock_session):
+    # Use the _test_session_data from conftest (already patched in client fixture)
+    from tests.conftest import _test_session_data
+    
+    # Clear session data for this test
+    _test_session_data.clear()
+    
     # Setup mock
     mock_user = User(
         email="test@example.com", password_hash="hashed", role="user", id=1
     )
-    mock_session.exec.return_value.first.return_value = mock_user
+    mock_result = MagicMock()
+    mock_result.first.return_value = mock_user
+    mock_session.exec.return_value = mock_result
     mock_verify_password.return_value = True
 
     # Execute
     response = client.post(
-        "/api/auth/login", json={"email": "test@example.com", "password": "password"}
-    )
+        "/api/auth/login",
+        json={
+            "email": "test@example.com",
+            "password": "password"})
 
     # Verify
     assert response.status_code == 200
     assert response.json()["message"] == "Logged in successfully"
+    assert _test_session_data.get("user_id") == 1
+    assert _test_session_data.get("role") == "user"
 
 
 @patch("api.auth.verify_password")
 def test_login_failure(mock_verify_password, client, mock_session):
+    # Use the _test_session_data from conftest (already patched in client fixture)
+    from tests.conftest import _test_session_data
+    
+    # Clear session data for this test
+    _test_session_data.clear()
+    
     # Setup mock
     mock_user = User(
         email="test@example.com", password_hash="hashed", role="user", id=1
     )
-    mock_session.exec.return_value.first.return_value = mock_user
+    mock_result = MagicMock()
+    mock_result.first.return_value = mock_user
+    mock_session.exec.return_value = mock_result
     mock_verify_password.return_value = False
 
     # Execute
@@ -61,8 +67,16 @@ def test_login_failure(mock_verify_password, client, mock_session):
 
 
 def test_login_user_not_found(client, mock_session):
+    # Use the _test_session_data from conftest (already patched in client fixture)
+    from tests.conftest import _test_session_data
+    
+    # Clear session data for this test
+    _test_session_data.clear()
+    
     # Setup mock
-    mock_session.exec.return_value.first.return_value = None
+    mock_result = MagicMock()
+    mock_result.first.return_value = None
+    mock_session.exec.return_value = mock_result
 
     # Execute
     response = client.post(

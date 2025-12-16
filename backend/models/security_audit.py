@@ -12,8 +12,11 @@ class SecurityAudit(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     __table_args__ = {"extend_existing": True}
-    event_type: str = Field(index=True)  # login_success, login_failure, token_access, etc.
-    user_id: Optional[int] = Field(default=None, index=True, foreign_key="user.id")
+    event_type: str = Field(
+        index=True
+    )  # login_success, login_failure, token_access, etc.
+    user_id: Optional[int] = Field(
+        default=None, index=True, foreign_key="user.id")
     ip_address: str
     user_agent: Optional[str] = None
     details: Dict[str, Any] = Field(default={}, sa_column=Column(JSON))
@@ -30,4 +33,3 @@ class SecurityAuditRead(SQLModel):
     user_agent: Optional[str]
     details: Dict[str, Any]
     created_at: datetime
-

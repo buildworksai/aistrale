@@ -1,13 +1,12 @@
 """Compliance reporting API endpoints."""
 
 from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlmodel import Session
 from pydantic import BaseModel
 
 from core.database import get_session
-from api.deps import get_current_user_id, require_admin
+from api.deps import require_admin
 from services.compliance_service import ComplianceService
 import structlog
 
@@ -24,7 +23,9 @@ class ReportRequest(BaseModel):
     end_date: datetime
 
 
-def get_compliance_service(session: Session = Depends(get_session)) -> ComplianceService:
+def get_compliance_service(
+    session: Session = Depends(get_session),
+) -> ComplianceService:
     """Dependency to get ComplianceService instance."""
     return ComplianceService(session=session)
 

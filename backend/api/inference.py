@@ -10,6 +10,7 @@ from models.chat import ChatMessage
 from models.token import Token
 from services.inference_service import run_inference
 from services.security_audit_service import log_security_event
+from api.deps import get_current_user_id
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ class InferenceRequest(BaseModel):
     provider: str
     model: Optional[str] = None
     input_text: str
-    token_id: int # Changed from token_value to token_id
+    token_id: int  # Changed from token_value to token_id
     hf_provider: Optional[str] = "auto"
     task: Optional[str] = "auto"
     prompt_id: Optional[int] = None
@@ -31,10 +32,8 @@ async def run_inference_endpoint(
     request: Request,
     inference_request: InferenceRequest,
     session: Session = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
 
     # Get the token
     token = session.get(Token, inference_request.token_id)
@@ -43,8 +42,8 @@ async def run_inference_endpoint(
 
     if token.provider != inference_request.provider:
         raise HTTPException(
-            status_code=400, detail="Token provider does not match request provider"
-        )
+            status_code=400,
+            detail="Token provider does not match request provider")
 
     # Log token access
     ip_address = request.client.host if request.client else "unknown"
@@ -70,17 +69,18 @@ async def run_inference_endpoint(
         .limit(20)
     ).all()
     # Reverse to chronological order
-    history = [
-        {"role": msg.role, "content": msg.content} for msg in reversed(history_objs)
-    ]
+    history = [{"role": msg.role, "content": msg.content}
+               for msg in reversed(history_objs)]
 
     # Save user message
-    user_msg = ChatMessage(user_id=user_id, role="user", content=inference_request.input_text)
+    user_msg = ChatMessage(
+        user_id=user_id, role="user", content=inference_request.input_text
+    )
     session.add(user_msg)
     session.commit()
 
     # Retrieve token value (encrypted, decrypted on access)
-    token_val = token.token_value 
+    token_val = token.token_value
 
     result = await run_inference(
         session=session,
@@ -98,7 +98,10 @@ async def run_inference_endpoint(
 
     # Save assistant response (if text)
     if isinstance(result, str):
-        asst_msg = ChatMessage(user_id=user_id, role="assistant", content=result)
+        asst_msg = ChatMessage(
+            user_id=user_id,
+            role="assistant",
+            content=result)
         session.add(asst_msg)
         session.commit()
 
@@ -106,10 +109,11 @@ async def run_inference_endpoint(
 
 
 @router.get("/history")
-def get_chat_history(request: Request, session: Session = Depends(get_session)):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+def get_chat_history(
+    request: Request,
+    session: Session = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
+):
 
     messages = session.exec(
         select(ChatMessage)
@@ -120,10 +124,11 @@ def get_chat_history(request: Request, session: Session = Depends(get_session)):
 
 
 @router.delete("/history")
-def clear_chat_history(request: Request, session: Session = Depends(get_session)):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+def clear_chat_history(
+    request: Request,
+    session: Session = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
+):
 
     messages = session.exec(
         select(ChatMessage).where(ChatMessage.user_id == user_id)

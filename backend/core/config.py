@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     SENTRY_DSN: str = ""
     # SECRET_KEY must be set in environment variables for security
     SECRET_KEY: str
-    ENCRYPTION_KEY: str # Required for token encryption
+    ENCRYPTION_KEY: str  # Required for token encryption
     ALGORITHM: str = "HS256"
     JAEGER_ENABLED: bool = True
     TESTING: bool = False
@@ -25,3 +25,8 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings():
     return Settings()
+
+
+def clear_settings_cache():
+    """Clear the settings cache. Useful for testing."""
+    get_settings.cache_clear()

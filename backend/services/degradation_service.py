@@ -4,6 +4,7 @@ from models.reliability import DegradationStrategy
 
 logger = logging.getLogger(__name__)
 
+
 class DegradationService:
     """
     Handles graceful degradation when providers fail.
@@ -14,16 +15,23 @@ class DegradationService:
         self.strategies = {
             "openai_outage": DegradationStrategy(
                 name="openai_outage",
-                trigger_conditions={"provider": "openai", "error_rate": 0.5},
-                actions={"fallback_provider": "anthropic", "cache_only": False},
-                enabled=True
+                trigger_conditions={
+                    "provider": "openai",
+                    "error_rate": 0.5},
+                actions={
+                    "fallback_provider": "anthropic",
+                    "cache_only": False},
+                enabled=True,
             ),
-             "global_outage": DegradationStrategy(
+            "global_outage": DegradationStrategy(
                 name="global_outage",
-                trigger_conditions={"global_error_rate": 0.8},
-                actions={"mode": "offline_mode", "static_response": True},
-                enabled=True
-            )
+                trigger_conditions={
+                    "global_error_rate": 0.8},
+                actions={
+                    "mode": "offline_mode",
+                    "static_response": True},
+                enabled=True,
+            ),
         }
         self.active_degradations = {}
 
@@ -33,13 +41,14 @@ class DegradationService:
         """
         provider = context.get("provider")
         error_rate = context.get("error_rate", 0)
-        
+
         # Simple check for openai outage simulation
         if provider == "openai" and error_rate > 0.5:
             strategy = self.strategies.get("openai_outage")
             if strategy and strategy.enabled:
                 self.active_degradations["openai"] = strategy
-                logger.warning(f"Activated degradation strategy: {strategy.name}")
+                logger.warning(
+                    f"Activated degradation strategy: {strategy.name}")
 
     def get_fallback_handling(self, provider: str) -> Optional[Dict[str, Any]]:
         """
@@ -57,17 +66,18 @@ class DegradationService:
         actions = self.get_fallback_handling(provider)
         if not actions:
             return None
-            
+
         if "fallback_provider" in actions:
-            # In real system, would call that provider. Here we return instruction.
+            # In real system, would call that provider. Here we return
+            # instruction.
             return {
                 "action": "reroute",
                 "target": actions["fallback_provider"],
-                "reason": "Degradation active"
+                "reason": "Degradation active",
             }
         elif actions.get("static_response"):
             return {
-                 "action": "static",
-                 "content": "System maintains limited functionality. Please try again later."
+                "action": "static",
+                "content": "System maintains limited functionality. Please try again later.",
             }
         return None

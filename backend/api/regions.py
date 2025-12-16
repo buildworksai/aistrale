@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
-from api.deps import get_current_user_id, require_admin
+from api.deps import get_current_user_id
 from models.region import Region
 from services.region_service import RegionService
 import structlog
@@ -54,4 +54,3 @@ def get_default_region(
         "code": default_region.value,
         "name": default_region.value.replace("-", " ").title(),
     }
-

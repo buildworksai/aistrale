@@ -2,27 +2,29 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from sqlmodel import Session, select, func, and_
+from sqlmodel import Session, select, and_
 
 from core.database import get_session
 from models.telemetry import Telemetry
-from api.deps import get_current_user_id
+from api.deps import get_current_user_id, get_session_data
+from typing import Dict, Any
 
 router = APIRouter()
 
 
 @router.get("/", response_model=list[Telemetry])
 def read_telemetry(
-    request: Request, session: Session = Depends(get_session)
+    request: Request,
+    session: Session = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
+    session_data: Dict[str, Any] = Depends(get_session_data),
 ) -> list[Telemetry]:
-    user_id = request.session.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    if request.session.get("role") == "admin":
+    if session_data.get("role") == "admin":
         return session.exec(select(Telemetry)).all()
     else:
-        return session.exec(select(Telemetry).where(Telemetry.user_id == user_id)).all()
+        return session.exec(
+            select(Telemetry).where(
+                Telemetry.user_id == user_id)).all()
 
 
 @router.get("/cost-analytics")
@@ -37,7 +39,7 @@ def get_cost_analytics(
 ) -> Dict[str, Any]:
     """
     Get cost analytics aggregated by time period, provider, or model.
-    
+
     Args:
         provider: Filter by provider
         start_date: Start date for filtering
@@ -49,7 +51,7 @@ def get_cost_analytics(
         end_date = datetime.utcnow()
     if not start_date:
         start_date = end_date - timedelta(days=30)
-    
+
     # Build query
     query = select(Telemetry).where(
         and_(
@@ -58,27 +60,30 @@ def get_cost_analytics(
             Telemetry.timestamp <= end_date,
         )
     )
-    
+
     if provider:
         query = query.where(Telemetry.sdk == provider)
-    
+
     telemetry_records = session.exec(query).all()
-    
+
     # Aggregate costs
     total_cost = sum(record.cost or 0.0 for record in telemetry_records)
-    
+
     # Group by provider
     by_provider: Dict[str, float] = {}
     for record in telemetry_records:
         provider_name = record.sdk or "unknown"
-        by_provider[provider_name] = by_provider.get(provider_name, 0.0) + (record.cost or 0.0)
-    
+        by_provider[provider_name] = by_provider.get(provider_name, 0.0) + (
+            record.cost or 0.0
+        )
+
     # Group by model
     by_model: Dict[str, float] = {}
     for record in telemetry_records:
         model_name = record.model or "unknown"
-        by_model[model_name] = by_model.get(model_name, 0.0) + (record.cost or 0.0)
-    
+        by_model[model_name] = by_model.get(
+            model_name, 0.0) + (record.cost or 0.0)
+
     # Group by time period
     by_time: Dict[str, float] = {}
     for record in telemetry_records:
@@ -91,9 +96,9 @@ def get_cost_analytics(
             time_key = record.timestamp.strftime("%Y-%m")
         else:
             time_key = record.timestamp.strftime("%Y-%m-%d")
-        
+
         by_time[time_key] = by_time.get(time_key, 0.0) + (record.cost or 0.0)
-    
+
     return {
         "total_cost": total_cost,
         "period": {

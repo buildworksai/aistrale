@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from services.llm_providers.base import InferenceResult
 from services.llm_providers.factory import get_provider
 from services.llm_providers.openai import OpenAIProvider
 from services.llm_providers.anthropic import AnthropicProvider
@@ -54,22 +53,22 @@ class TestOpenAIProvider:
         with patch("services.llm_providers.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
-            
+
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "Test response"
             mock_response.usage = Mock()
             mock_response.usage.prompt_tokens = 10
             mock_response.usage.completion_tokens = 20
-            
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
-            
+
+            mock_client.chat.completions.create = AsyncMock(
+                return_value=mock_response)
+
             provider = OpenAIProvider(token="test_token")
             result = await provider.run_inference(
-                model="gpt-3.5-turbo",
-                input_text="Test input"
+                model="gpt-3.5-turbo", input_text="Test input"
             )
-            
+
             assert result["output"] == "Test response"
             assert result["input_tokens"] == 10
             assert result["output_tokens"] == 20
@@ -96,22 +95,21 @@ class TestAnthropicProvider:
         with patch("services.llm_providers.anthropic.AsyncAnthropic") as mock_anthropic:
             mock_client = AsyncMock()
             mock_anthropic.return_value = mock_client
-            
+
             mock_response = Mock()
             mock_response.content = [Mock()]
             mock_response.content[0].text = "Test response"
             mock_response.usage = Mock()
             mock_response.usage.input_tokens = 10
             mock_response.usage.output_tokens = 20
-            
+
             mock_client.messages.create = AsyncMock(return_value=mock_response)
-            
+
             provider = AnthropicProvider(token="test_token")
             result = await provider.run_inference(
-                model="claude-3-5-sonnet-20241022",
-                input_text="Test input"
+                model="claude-3-5-sonnet-20241022", input_text="Test input"
             )
-            
+
             assert result["output"] == "Test response"
             assert result["input_tokens"] == 10
             assert result["output_tokens"] == 20
@@ -140,17 +138,16 @@ class TestGeminiProvider:
             mock_chat = Mock()
             mock_response = Mock()
             mock_response.text = "Test response"
-            
+
             mock_chat.send_message = Mock(return_value=mock_response)
             mock_model.start_chat = Mock(return_value=mock_chat)
             mock_genai.GenerativeModel = Mock(return_value=mock_model)
-            
+
             provider = GeminiProvider(token="test_token")
             result = await provider.run_inference(
-                model="gemini-pro",
-                input_text="Test input"
+                model="gemini-pro", input_text="Test input"
             )
-            
+
             assert result["output"] == "Test response"
 
     def test_get_pricing(self):
@@ -175,37 +172,37 @@ class TestGroqProvider:
         with patch("services.llm_providers.groq.AsyncGroq") as mock_groq:
             mock_client = AsyncMock()
             mock_groq.return_value = mock_client
-            
+
             # Mock streaming response
             mock_chunk1 = Mock()
             mock_chunk1.choices = [Mock()]
             mock_chunk1.choices[0].delta.content = "Test "
             mock_chunk1.usage = None
-            
+
             mock_chunk2 = Mock()
             mock_chunk2.choices = [Mock()]
             mock_chunk2.choices[0].delta.content = "response"
             mock_chunk2.usage = Mock()
             mock_chunk2.usage.prompt_tokens = 10
             mock_chunk2.usage.completion_tokens = 20
-            
+
             async def mock_stream():
                 yield mock_chunk1
                 yield mock_chunk2
-            
+
             # Create an async generator properly
             async def async_stream():
                 yield mock_chunk1
                 yield mock_chunk2
-            
-            mock_client.chat.completions.create = AsyncMock(return_value=async_stream())
-            
+
+            mock_client.chat.completions.create = AsyncMock(
+                return_value=async_stream())
+
             provider = GroqProvider(token="test_token")
             result = await provider.run_inference(
-                model="llama-3.3-70b-versatile",
-                input_text="Test input"
+                model="llama-3.3-70b-versatile", input_text="Test input"
             )
-            
+
             assert result["output"] == "Test response"
             assert result["input_tokens"] == 10
             assert result["output_tokens"] == 20
@@ -221,4 +218,3 @@ class TestGroqProvider:
         """Test provider name."""
         provider = GroqProvider(token="test_token")
         assert provider.get_provider_name() == "groq"
-

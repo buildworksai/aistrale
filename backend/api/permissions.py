@@ -230,4 +230,3 @@ def check_permission(
         "action": action,
         "granted": has_permission,
     }
-

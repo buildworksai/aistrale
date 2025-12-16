@@ -1,5 +1,5 @@
-import pytest
 from services.routing_service import RoutingService
+
 
 def test_route_manual_high_quality():
     service = RoutingService()
@@ -7,6 +7,7 @@ def test_route_manual_high_quality():
     selection = service.route_request("chat", quality_req=0.93)
     assert selection["provider"] == "openai"
     assert selection["model"] == "gpt-4"
+
 
 def test_route_cheapest_rule():
     service = RoutingService()
@@ -16,6 +17,7 @@ def test_route_cheapest_rule():
     selection = service.route_request("chat")
     assert selection["provider"] == "together"
     assert selection["model"] == "llama-2-70b"
+
 
 def test_route_fallback():
     service = RoutingService()

@@ -16,7 +16,7 @@ class HuggingFaceProvider(LLMProvider):
     def __init__(self, token: str, hf_provider: str = "auto", **kwargs):
         """
         Initialize HuggingFace provider.
-        
+
         Args:
             token: HuggingFace API token
             hf_provider: HuggingFace provider (auto, fal-ai, replicate, etc.)
@@ -32,7 +32,7 @@ class HuggingFaceProvider(LLMProvider):
         input_text: str,
         history: Optional[list] = None,
         task: str = "auto",
-        **kwargs
+        **kwargs,
     ) -> InferenceResult:
         """Run HuggingFace inference."""
         history = history or []
@@ -66,17 +66,21 @@ class HuggingFaceProvider(LLMProvider):
             result = {"binary_data": b64_data, "mime_type": "image/png"}
 
         elif task == "text-to-video":
-            video_bytes = await self.client.text_to_video(input_text, model=target_model)
+            video_bytes = await self.client.text_to_video(
+                input_text, model=target_model
+            )
             b64_data = base64.b64encode(video_bytes).decode("utf-8")
             result = {"binary_data": b64_data, "mime_type": "video/mp4"}
 
         elif task == "image-to-video":
-            raise NotImplementedError("Image-to-video requires image input support")
+            raise NotImplementedError(
+                "Image-to-video requires image input support")
 
         elif task == "chat-completion":
             messages = []
             for msg in history:
-                messages.append({"role": msg["role"], "content": msg["content"]})
+                messages.append(
+                    {"role": msg["role"], "content": msg["content"]})
             messages.append({"role": "user", "content": input_text})
 
             response = await self.client.chat_completion(messages, model=target_model)
@@ -85,7 +89,9 @@ class HuggingFaceProvider(LLMProvider):
         else:
             # Auto/Fallback Logic
             try:
-                result = await self.client.text_generation(full_input, model=target_model)
+                result = await self.client.text_generation(
+                    full_input, model=target_model
+                )
             except Exception as e:
                 error_str = str(e).lower()
                 if "text-to-video" in error_str or (
@@ -95,8 +101,11 @@ class HuggingFaceProvider(LLMProvider):
                         video_bytes = await self.client.text_to_video(
                             input_text, model=target_model
                         )
-                        b64_data = base64.b64encode(video_bytes).decode("utf-8")
-                        result = {"binary_data": b64_data, "mime_type": "video/mp4"}
+                        b64_data = base64.b64encode(
+                            video_bytes).decode("utf-8")
+                        result = {
+                            "binary_data": b64_data,
+                            "mime_type": "video/mp4"}
                     except AttributeError:
                         raise e
                 elif "conversational" in error_str and (
@@ -104,10 +113,14 @@ class HuggingFaceProvider(LLMProvider):
                 ):
                     messages = []
                     for msg in history:
-                        messages.append({"role": msg["role"], "content": msg["content"]})
+                        messages.append(
+                            {"role": msg["role"], "content": msg["content"]}
+                        )
                     messages.append({"role": "user", "content": input_text})
 
-                    response = await self.client.chat_completion(messages, model=target_model)
+                    response = await self.client.chat_completion(
+                        messages, model=target_model
+                    )
                     result = response.choices[0].message.content
                 elif "Task" in str(e) and "not supported" in str(e):
                     # Generic fallback
@@ -127,7 +140,8 @@ class HuggingFaceProvider(LLMProvider):
                     try:
                         result = response.json()
                     except Exception:
-                        b64_data = base64.b64encode(response.content).decode("utf-8")
+                        b64_data = base64.b64encode(
+                            response.content).decode("utf-8")
                         result = {"binary_data": b64_data}
                 else:
                     raise e
@@ -147,4 +161,3 @@ class HuggingFaceProvider(LLMProvider):
     def get_provider_name(self) -> str:
         """Get provider name."""
         return "huggingface"
-

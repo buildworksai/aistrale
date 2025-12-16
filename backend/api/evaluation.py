@@ -79,16 +79,14 @@ def get_evaluation_results(
     if not evaluation or evaluation.user_id != user_id:
         raise HTTPException(status_code=404, detail="Evaluation not found")
 
-    results = session.exec(
-        select(EvaluationResult).where(
-            EvaluationResult.evaluation_id == evaluation_id
-        )
-    ).all()
+    results = session.exec(select(EvaluationResult).where(
+        EvaluationResult.evaluation_id == evaluation_id)).all()
 
     total_tests = len(results)
     passed = sum(1 for r in results if r.score >= 0.7)
     failed = total_tests - passed
-    avg_score = sum(r.score for r in results) / total_tests if total_tests > 0 else 0
+    avg_score = sum(r.score for r in results) / \
+        total_tests if total_tests > 0 else 0
 
     return {
         "evaluation": evaluation,
@@ -121,4 +119,3 @@ def run_evaluation(
     # In a real implementation, this would trigger async evaluation
     # For now, return a placeholder
     return {"status": "started", "evaluation_id": evaluation_id}
-

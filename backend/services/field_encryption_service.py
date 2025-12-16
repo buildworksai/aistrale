@@ -1,12 +1,10 @@
 import os
-import base64
 import logging
 from typing import Optional
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 logger = logging.getLogger(__name__)
+
 
 class FieldEncryptionService:
     """
@@ -19,11 +17,13 @@ class FieldEncryptionService:
         If no key provided, it looks for ENCRYPTION_KEY env var.
         """
         self._key = key or os.environ.get("ENCRYPTION_KEY")
-        
+
         if not self._key:
-            logger.warning("No ENCRYPTION_KEY provided. Generating a temporary key for this session. DATA WILL BE UNREADABLE AFTER RESTART.")
+            logger.warning(
+                "No ENCRYPTION_KEY provided. Generating a temporary key for this session. DATA WILL BE UNREADABLE AFTER RESTART."
+            )
             self._key = Fernet.generate_key().decode()
-        
+
         try:
             self.fernet = Fernet(self._key)
         except Exception as e:
