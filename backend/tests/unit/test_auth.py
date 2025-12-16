@@ -2,14 +2,16 @@ from unittest.mock import patch, MagicMock
 
 from models.user import User
 
-# Import the shared test session data from conftest
-from tests.conftest import _test_session_data
+# Import the conftest module to access the shared test session data
+# This ensures we're using the same dictionary instance
+import tests.conftest
 
 
 @patch("api.auth.verify_password")
 def test_login_success(mock_verify_password, client, mock_session):
     # Clear session data for this test
-    _test_session_data.clear()
+    # Access via module to ensure we're using the same dictionary instance
+    tests.conftest._test_session_data.clear()
     
     # Setup mock
     mock_user = User(
@@ -30,14 +32,18 @@ def test_login_success(mock_verify_password, client, mock_session):
     # Verify
     assert response.status_code == 200
     assert response.json()["message"] == "Logged in successfully"
-    assert _test_session_data.get("user_id") == 1
-    assert _test_session_data.get("role") == "user"
+    # Access via module to ensure we're using the same dictionary instance
+    # The login endpoint should have set session_data["user_id"] and session_data["role"]
+    # which modifies the same dictionary that get_session_data_override returns
+    session_data = tests.conftest._test_session_data
+    assert session_data.get("user_id") == 1
+    assert session_data.get("role") == "user"
 
 
 @patch("api.auth.verify_password")
 def test_login_failure(mock_verify_password, client, mock_session):
     # Clear session data for this test
-    _test_session_data.clear()
+    tests.conftest._test_session_data.clear()
     
     # Setup mock
     mock_user = User(
@@ -60,11 +66,8 @@ def test_login_failure(mock_verify_password, client, mock_session):
 
 
 def test_login_user_not_found(client, mock_session):
-    # Use the _test_session_data from conftest (already patched in client fixture)
-    from tests.conftest import _test_session_data
-    
     # Clear session data for this test
-    _test_session_data.clear()
+    tests.conftest._test_session_data.clear()
     
     # Setup mock
     mock_result = MagicMock()

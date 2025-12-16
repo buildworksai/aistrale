@@ -58,6 +58,18 @@ if not hasattr(app.state, 'view_rate_limit'):
 _test_session_data = {}
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset rate limiter state before each test to prevent 429 errors."""
+    # Clear rate limiter state before each test
+    if hasattr(app.state, 'view_rate_limit'):
+        app.state.view_rate_limit.clear()
+    yield
+    # Clear again after test
+    if hasattr(app.state, 'view_rate_limit'):
+        app.state.view_rate_limit.clear()
+
+
 @pytest.fixture
 def mock_session():
     """Create a mock session with proper method mocks."""
@@ -163,13 +175,17 @@ def client(mock_session):
         # Override get_session_data to return the test session dict
         # The override function should NOT require Request parameter
         # FastAPI will inject Request automatically, but our override ignores it
+        # IMPORTANT: We must access _test_session_data from the module, not capture it
+        # This ensures we always return the current dictionary instance
+        import tests.conftest as conftest_module
         def get_session_data_override(request: Request = None):
-            return _test_session_data
+            # Return the shared dictionary from the module - always get the current instance
+            return conftest_module._test_session_data
         app.dependency_overrides[get_session_data] = get_session_data_override
         yield TestClient(app)
         app.dependency_overrides.clear()
-        # Clear test session data after each test
-        _test_session_data.clear()
+        # Don't clear test session data here - let each test manage it
+        # _test_session_data.clear()
     
     # Restore app.state
     if original_limiter is not None:

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, desc, select
 
 from core.database import get_session
-from core.limiter import limiter
+from core.limiter import limit
 from models.chat import ChatMessage
 from models.token import Token
 from services.inference_service import run_inference
@@ -27,7 +27,7 @@ class InferenceRequest(BaseModel):
 
 
 @router.post("/run")
-@limiter.limit("10/minute")
+@limit("10/minute")
 async def run_inference_endpoint(
     request: Request,
     inference_request: InferenceRequest,

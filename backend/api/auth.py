@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from typing import Dict, Any
 
 from core.database import get_session
-from core.limiter import limiter
+from core.limiter import limit
 from core.security import verify_password
 from models.user import User
 from services.security_audit_service import log_security_event
@@ -19,6 +19,7 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login")
+@limit("5/minute")
 def login(
     request: Request,
     login_data: LoginRequest,

@@ -13,6 +13,7 @@ from api import (
     evaluation,
 )
 from api import admin
+import os
 import uuid
 from contextlib import asynccontextmanager
 
@@ -160,7 +161,10 @@ async def slowapi_state_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
-app.add_middleware(SlowAPIMiddleware)
+# Only add SlowAPIMiddleware if not in testing mode
+# In tests, rate limiting is handled by mocking the limiter
+if os.getenv("TESTING", "false").lower() != "true":
+    app.add_middleware(SlowAPIMiddleware)
 
 # Configure Tracing
 if settings.JAEGER_ENABLED:

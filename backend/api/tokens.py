@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
 from core.database import get_session
-from core.limiter import limiter
+from core.limiter import limit
 from api.deps import get_current_user_id
 from models.token import Token, TokenCreate, TokenRead
 from services.security_audit_service import log_security_event
@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=TokenRead)
-@limiter.limit("5/hour")
+@limit("5/hour")
 def create_token(
     token_in: TokenCreate,
     request: Request,
