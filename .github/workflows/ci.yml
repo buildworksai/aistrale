@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     services:
       db:
         image: pgvector/pgvector:pg17
@@ -83,7 +85,7 @@ jobs:
         TESTING: "true"
 
     - name: Upload coverage reports to Codecov
-      if: ${{ secrets.CODECOV_TOKEN != '' }}
+      if: ${{ env.CODECOV_TOKEN != '' }}
       uses: codecov/codecov-action@v4
       env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_TOKEN: ${{ env.CODECOV_TOKEN }}
