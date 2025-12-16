@@ -6,7 +6,7 @@ We provide security updates for the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
+| 1.0.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
@@ -52,7 +52,6 @@ Instead, please report them via email to **security@buildworks.ai**.
 - Validate all user inputs
 - Use parameterized queries (SQLModel handles this)
 - Encrypt sensitive data at rest
-- Follow `.cursor/rules/08-auth-security.mdc` guidelines
 
 ## Security Features
 

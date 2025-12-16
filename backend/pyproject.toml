@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aistrale-backend"
-version = "0.1.0"
+version = "1.0.0"
 description = "Backend for AISTRALE - Turn AI from a black box into an engineered system"
 authors = [
   { name = "BuildWorks.AI", email = "admin@buildworks.ai" },

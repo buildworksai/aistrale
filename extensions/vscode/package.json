@@ -2,7 +2,7 @@
     "name": "aistrale-vscode",
     "displayName": "Aistrale AI",
     "description": "Aistrale VS Code Extension",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "engines": {
         "vscode": "^1.75.0"
     },

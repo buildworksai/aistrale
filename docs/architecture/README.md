@@ -150,10 +150,7 @@ All features follow these core principles:
 
 For questions about these architectures, see:
 - Implementation plans in `planning/`
-- Core principles in `.cursor/rules/00-core-principles.mdc`
-- Technology stack in `.cursor/rules/04-tech-stack.mdc`
 
 ---
 
-**Last Updated:** 2025-01-27
-
+**Last Updated:** 2025-12-17

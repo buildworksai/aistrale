@@ -27,21 +27,18 @@ Follow the [README.md](README.md) Quick Start guide to set up your development e
 
 ### Code Standards
 
-- **Python**: Follow `.cursor/rules/05-python-standards.mdc`
-  - Use Black for formatting (line length: 88)
-  - Use isort for import sorting
-  - Type hints required for all functions
-  - Follow FastAPI and SQLModel patterns
+- **Python (backend)**:
+  - Run `ruff` and `mypy` (configured in `backend/pyproject.toml`)
+  - Keep function/type annotations consistent
+  - Follow FastAPI + SQLModel patterns already used in `backend/api/` and `backend/models/`
 
-- **TypeScript**: Follow `.cursor/rules/06-typescript-standards.mdc`
-  - TypeScript strict mode
-  - ESLint and Prettier configured
-  - React component patterns
+- **TypeScript (frontend / extensions / SDKs)**:
+  - Keep TypeScript strictness and linting clean (see each package's config)
+  - Prefer typed APIs and avoid `any`
 
-- **Testing**: Follow `.cursor/rules/06-testing.mdc`
+- **Testing**:
   - Aim for >80% test coverage
-  - Write unit, integration, and E2E tests
-  - All tests must pass before PR
+  - All tests must pass in CI before opening a PR
 
 ### Commit Messages
 
@@ -88,7 +85,6 @@ refactor: Simplify telemetry tracking logic
 
 - **Backend**: `backend/` - FastAPI application
 - **Frontend**: `frontend/` - React application
-- **Rules**: `.cursor/rules/` - Development standards
 - **Documentation**: `docs/` and `reports/`
 - **Scripts**: `scripts/` (if exists)
 
@@ -105,7 +101,7 @@ refactor: Simplify telemetry tracking logic
 
 - Open an [Issue](https://github.com/buildworksai/aistrale/issues)
 - Check existing documentation
-- Review `.cursor/rules/` for development patterns
+
 
 ---
 

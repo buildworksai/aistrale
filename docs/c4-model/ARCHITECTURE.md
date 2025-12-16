@@ -261,6 +261,4 @@ Shows how AISTRALE is deployed:
 
 - [C4 Model](https://c4model.com/)
 - [Mermaid Diagrams](https://mermaid.js.org/)
-- [AISTRALE Core Principles](../.cursor/rules/00-core-principles.mdc)
-- [AISTRALE Tech Stack](../.cursor/rules/04-tech-stack.mdc)
 

@@ -203,9 +203,9 @@ This starts:
 - **API Reference**: [docs/API.md](docs/API.md)
 
 ### Development
-- **[Getting Started Guide](.cursor/rules/01-getting-started.mdc)** - Development setup
-- **[Core Principles](.cursor/rules/00-core-principles.mdc)** - Architectural principles
-- **[Tech Stack](.cursor/rules/04-tech-stack.mdc)** - Technology decisions
+
+- See `CONTRIBUTING.md` for code standards and local tooling.
+- Run the local stack via Docker Compose (see Quick Start above).
 
 ### Planning
 - **[Implementation Plans](planning/)** - Feature implementation roadmaps
@@ -415,7 +415,7 @@ We welcome contributions! Please see our contributing guidelines:
 
 1. **Fork the repository**
 2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Follow code standards** (see `.cursor/rules/05-code-quality.mdc`)
+3. **Follow code standards** (see `CONTRIBUTING.md`)
 4. **Write tests** (aim for >80% coverage)
 5. **Commit changes** (`git commit -m 'Add amazing feature'`)
 6. **Push to branch** (`git push origin feature/amazing-feature`)
