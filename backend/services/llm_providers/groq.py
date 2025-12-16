@@ -61,6 +61,7 @@ class GroqProvider(LLMProvider):
             elif (
                 hasattr(chunk, "x_groq")
                 and chunk.x_groq
+                and isinstance(chunk.x_groq, dict)
                 and "usage" in chunk.x_groq
             ):
                 usage_data = chunk.x_groq["usage"]
