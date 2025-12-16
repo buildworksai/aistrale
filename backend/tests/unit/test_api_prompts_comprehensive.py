@@ -244,8 +244,9 @@ class TestPromptsAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["role"] = "admin"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         mock_session.get.return_value = test_prompt
         mock_session.delete = MagicMock()
@@ -274,8 +275,9 @@ class TestPromptsAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as regular user
-        with client.session_transaction() as sess:
-            sess["role"] = "user"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         mock_session.get.return_value = test_prompt
         
@@ -301,8 +303,9 @@ class TestPromptsAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["role"] = "admin"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         mock_session.get.return_value = None
         

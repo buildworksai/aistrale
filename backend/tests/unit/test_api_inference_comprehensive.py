@@ -44,8 +44,9 @@ class TestInferenceAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Mock session storage
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        from api.deps import get_current_user_id
+
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Mock token retrieval
         mock_session.get.return_value = test_token
@@ -104,8 +105,10 @@ class TestInferenceAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         mock_session.get.return_value = None
         
@@ -131,8 +134,10 @@ class TestInferenceAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         mock_session.get.return_value = test_token
         
@@ -158,8 +163,10 @@ class TestInferenceAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Mock chat messages
         msg1 = ChatMessage(id=1, user_id=1, role="user", content="Hello")
@@ -197,8 +204,10 @@ class TestInferenceAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Mock messages to delete
         msg1 = ChatMessage(id=1, user_id=1, role="user", content="Hello")

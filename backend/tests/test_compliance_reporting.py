@@ -4,8 +4,8 @@ from services.compliance_service import ComplianceService
 from core.audit_logging import log_access
 from fastapi import Request
 
-def test_soc2_report_generation():
-    service = ComplianceService()
+def test_soc2_report_generation(mock_session):
+    service = ComplianceService(session=mock_session)
     start = datetime.utcnow() - timedelta(days=1)
     end = datetime.utcnow()
     
@@ -14,8 +14,8 @@ def test_soc2_report_generation():
     assert "User ID" in report_csv
     assert "login_success" in report_csv
 
-def test_gdpr_report_generation():
-    service = ComplianceService()
+def test_gdpr_report_generation(mock_session):
+    service = ComplianceService(session=mock_session)
     report = service.generate_gdpr_report(user_id=123)
     assert report["user_id"] == 123
     assert "data" in report

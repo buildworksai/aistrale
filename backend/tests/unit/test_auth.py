@@ -1,9 +1,22 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from fastapi.testclient import TestClient
 
 from main import app
 from models.user import User
+from core.database import get_session
+from core.limiter import limiter
+
+# Create a mock session
+mock_session = MagicMock()
+app.dependency_overrides[get_session] = lambda: mock_session
+
+# Mock rate limiter
+mock_limiter = MagicMock()
+def noop_decorator(func):
+    return func
+mock_limiter.limit.return_value = noop_decorator
+app.state.limiter = mock_limiter
 
 client = TestClient(app)
 

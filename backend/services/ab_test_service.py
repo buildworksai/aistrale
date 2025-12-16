@@ -78,6 +78,8 @@ class ABTestService:
                 "created_at": datetime.utcnow().isoformat()
             },
             "results": results,
+            "fastest_provider": fastest.provider,
+            "best_quality_provider": best_quality.provider,
             "statistics": {
                 "openai": {
                     "avg_latency": 500,

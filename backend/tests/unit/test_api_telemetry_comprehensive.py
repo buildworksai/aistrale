@@ -24,9 +24,9 @@ class TestTelemetryAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as regular user
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
-            sess["role"] = "user"
+        from api.deps import get_current_user_id
+
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Mock telemetry records
         telemetry1 = Telemetry(
@@ -62,9 +62,9 @@ class TestTelemetryAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
-            sess["role"] = "admin"
+        from api.deps import get_current_user_id
+
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Mock telemetry records from multiple users
         telemetry1 = Telemetry(

@@ -29,21 +29,28 @@ def mock_session():
 
 @pytest.fixture
 def client(mock_session):
-    # Mock rate limiter globally
-    from unittest.mock import patch
-    with patch("api.auth.limiter") as mock_auth_limiter, \
-         patch("api.tokens.limiter") as mock_tokens_limiter, \
-         patch("api.inference.limiter") as mock_inference_limiter:
-        # Make limiter.limit() return a no-op decorator
-        def noop_decorator(func):
-            return func
-        mock_auth_limiter.limit.return_value = noop_decorator
-        mock_tokens_limiter.limit.return_value = noop_decorator
-        mock_inference_limiter.limit.return_value = noop_decorator
+    # Mock rate limiter globally - patch at multiple levels
+    from unittest.mock import patch, MagicMock
+    
+    # Create a mock limiter that doesn't actually limit
+    mock_limiter = MagicMock()
+    def noop_decorator(func):
+        return func
+    mock_limiter.limit.return_value = noop_decorator
+    
+    # Patch limiter in all API modules and app state
+    with patch("api.auth.limiter", mock_limiter), \
+         patch("api.tokens.limiter", mock_limiter), \
+         patch("api.inference.limiter", mock_limiter), \
+         patch("core.limiter.limiter", mock_limiter):
+        # Also patch app.state.limiter
+        original_limiter = app.state.limiter
+        app.state.limiter = mock_limiter
         
         app.dependency_overrides[get_session] = lambda: mock_session
         yield TestClient(app)
         app.dependency_overrides.clear()
+        app.state.limiter = original_limiter
 
 
 @pytest.fixture
@@ -95,6 +102,7 @@ def admin_client(client, mock_session):
     mock_result = MagicMock()
     mock_result.first.return_value = admin
     mock_session.exec.return_value = mock_result
+    mock_session.get.return_value = admin
     
     from unittest.mock import patch
     with patch("api.auth.verify_password", return_value=True):
@@ -104,3 +112,30 @@ def admin_client(client, mock_session):
         )
         yield client
     app.dependency_overrides.clear()
+
+
+def set_session_user(client, user_id: int, role: str = "user"):
+    """Helper to set user in session for testing."""
+    from unittest.mock import patch, MagicMock
+    from models.user import User
+    
+    # Mock the session middleware to return a session with user_id
+    mock_session_dict = {"user_id": user_id, "role": role}
+    
+    def mock_get_session(request):
+        return mock_session_dict
+    
+    # Patch request.session.get to return our mock session
+    original_request = client.app.request_class
+    
+    class MockRequest(original_request):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._session = mock_session_dict
+        
+        @property
+        def session(self):
+            return self._session
+    
+    client.app.request_class = MockRequest
+    return client

@@ -109,9 +109,13 @@ class TestAuthAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        # Set session
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        # Override get_current_user_id dependency
+
+        
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         response = client.post("/api/auth/logout")
         assert response.status_code == 200
@@ -136,9 +140,13 @@ class TestAuthAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
         
-        # Set session
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        # Override get_current_user_id dependency
+
+        
+        from api.deps import get_current_user_id
+
+        
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         response = client.get("/api/auth/me")
         assert response.status_code == 200
@@ -174,8 +182,9 @@ class TestAuthAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
         
         # Set session with non-existent user
-        with client.session_transaction() as sess:
-            sess["user_id"] = 999
+        from api.deps import get_current_user_id
+
+        app.dependency_overrides[get_current_user_id] = lambda: 999
         
         response = client.get("/api/auth/me")
         assert response.status_code == 401

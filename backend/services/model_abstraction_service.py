@@ -16,7 +16,7 @@ class ModelAbstractionService:
             ModelMapping(
                 id=1,
                 model_name="smart-fast",
-                provider="groq",
+                provider="openai",
                 equivalent_models=["gpt-3.5-turbo", "claude-3-haiku", "gemini-pro"],
                 capabilities={"max_tokens": 4096, "supports_streaming": True, "supports_functions": False, "context_window": 8192},
                 pricing={"input_per_1k": 0.0005, "output_per_1k": 0.0015}

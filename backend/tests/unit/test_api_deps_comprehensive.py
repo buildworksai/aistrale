@@ -13,9 +13,11 @@ class TestAPIDeps:
 
     def test_get_current_user_id_success(self, client):
         """Test getting current user ID when authenticated."""
-        # Set session
-        with client.session_transaction() as sess:
-            sess["user_id"] = 1
+        # Override get_current_user_id dependency
+
+        from api.deps import get_current_user_id
+
+        app.dependency_overrides[get_current_user_id] = lambda: 1
         
         # Call the dependency directly
         from fastapi import Request

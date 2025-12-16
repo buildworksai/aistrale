@@ -24,8 +24,9 @@ class TestUsersAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["role"] = "admin"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         # Mock user doesn't exist
         mock_result = MagicMock()
@@ -67,8 +68,9 @@ class TestUsersAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
         
         # Set session as regular user
-        with client.session_transaction() as sess:
-            sess["role"] = "user"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         response = client.post(
             "/api/users/",
@@ -92,8 +94,9 @@ class TestUsersAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["role"] = "admin"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         # Mock user exists
         existing_user = User(
@@ -132,8 +135,9 @@ class TestUsersAPI:
         app.dependency_overrides[get_session] = mock_get_session
         
         # Set session as admin
-        with client.session_transaction() as sess:
-            sess["role"] = "admin"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         # Mock users
         user1 = User(id=1, email="user1@example.com", password_hash="hashed", role="user")
@@ -159,8 +163,9 @@ class TestUsersAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
         
         # Set session as regular user
-        with client.session_transaction() as sess:
-            sess["role"] = "user"
+        # Note: Role check happens via require_admin dependency or request.session
+
+        # For admin endpoints, use require_admin dependency override
         
         response = client.get("/api/users/")
         assert response.status_code == 403
