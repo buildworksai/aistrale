@@ -123,22 +123,19 @@ class TestPromptsCoverage:
         app.dependency_overrides[get_session] = lambda: mock_session
         app.dependency_overrides[mock_user_id] = lambda: 1
 
-        # Mock request.session.get to return "user" not "admin"
-        with patch("api.prompts.Request") as mock_request:
-            mock_req = MagicMock()
-            mock_req.session.get.return_value = "user"  # Not admin
-            mock_request.return_value = mock_req
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "user"})
 
-            prompt = Prompt(
-                id=1,
-                name="test",
-                template="Hello",
-                user_id=1,
-                version=1)
-            mock_session.get.return_value = prompt
+        prompt = Prompt(
+            id=1,
+            name="test",
+            template="Hello",
+            user_id=1,
+            version=1)
+        mock_session.get.return_value = prompt
 
-            response = client.delete("/api/prompts/1")
-            assert response.status_code in [403, 401, 500]
+        response = client.delete("/api/prompts/1")
+        assert response.status_code in [403, 401, 500]
 
         app.dependency_overrides.clear()
 

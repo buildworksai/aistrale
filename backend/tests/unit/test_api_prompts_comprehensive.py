@@ -43,8 +43,15 @@ class TestPromptsAPI:
 
         mock_session.add = MagicMock()
         mock_session.commit = MagicMock()
-        mock_session.refresh = MagicMock()
-        mock_session.refresh.return_value = test_prompt
+        from datetime import datetime
+        def mock_refresh(obj):
+            # response_model PromptRead requires id/created_at/updated_at
+            obj.id = 1
+            if getattr(obj, "created_at", None) is None:
+                obj.created_at = datetime.utcnow()
+            if getattr(obj, "updated_at", None) is None:
+                obj.updated_at = datetime.utcnow()
+        mock_session.refresh = MagicMock(side_effect=mock_refresh)
 
         response = client.post(
             "/api/prompts/",

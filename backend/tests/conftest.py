@@ -57,6 +57,12 @@ if not hasattr(app.state, 'view_rate_limit'):
 # This will be overridden by get_session_data dependency
 _test_session_data = {}
 
+# Ensure imports of `tests.conftest` resolve to this exact module instance.
+# Pytest loads this file as `conftest`, but some tests (and this file itself)
+# import `tests.conftest`, which would otherwise create a second module object
+# with a different `_test_session_data` dict.
+sys.modules["tests.conftest"] = sys.modules[__name__]
+
 
 @pytest.fixture(autouse=True)
 def reset_test_session_data():
@@ -182,12 +188,8 @@ def client(mock_session):
         # Override get_session_data to return the test session dict
         # The override function should NOT require Request parameter
         # FastAPI will inject Request automatically, but our override ignores it
-        # IMPORTANT: We must access _test_session_data from the module, not capture it
-        # This ensures we always return the current dictionary instance
-        import tests.conftest as conftest_module
         def get_session_data_override(request: Request = None):
-            # Return the shared dictionary from the module - always get the current instance
-            return conftest_module._test_session_data
+            return _test_session_data
         app.dependency_overrides[get_session_data] = get_session_data_override
         yield TestClient(app)
         app.dependency_overrides.clear()
