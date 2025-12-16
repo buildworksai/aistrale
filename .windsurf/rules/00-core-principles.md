@@ -1,0 +1,140 @@
+---
+trigger: always_on
+description: Core architectural principles for AISTRALE application
+globs: **/*
+---
+
+# AISTRALE Core Architectural Principles
+
+**⚠️ CRITICAL**: These principles form the foundation of the AISTRALE application. All development must align with these principles.
+
+**Product**: AISTRALE - Turn AI from a black box into an engineered system  
+**Company**: BuildWorks.AI  
+**Website**: https://aistrale.com  
+**License**: Apache License 2.0
+
+**Related Documentation:**
+- Engineering Gaps Analysis: `reports/engineering_gaps_analysis.md`
+- Implementation Plan: `planning/implementation_plan.md`
+
+## BuildWorks-00001 LLM-First Architecture
+
+AISTRALE is an **LLM engineering platform** focused on HuggingFace model inference:
+
+- **Model Inference**: Support for HuggingFace Hub and OpenAI SDKs
+- **Telemetry**: Comprehensive tracking of inference execution, tokens, and performance
+- **Token Management**: Secure storage and management of HuggingFace API tokens
+- **Observability**: Full tracing of LLM calls, prompt/response logging, cost tracking
+- **Future LLM Features**: Prompt management, evaluation framework, cost analytics
+
+**Implementation**: See `11-llm-features.mdc` for LLM-specific patterns.
+
+## BuildWorks-00002 Session-Based Authentication
+
+AISTRALE uses **pure session-based authentication** (no JWT tokens):
+
+- **HTTP-Only Cookies**: Session tokens stored in HTTP-only cookies for security
+- **Redis-Backed Sessions**: Session data stored in Redis for scalability
+- **RBAC**: Role-based access control (admin/user roles)
+- **Deny-by-Default**: Every route requires explicit authentication
+
+**Implementation**: See `08-auth-security.mdc` for authentication patterns.
+
+## BuildWorks-00003 Observability-First Development
+
+AISTRALE implements **comprehensive observability** (Phase 2 implemented):
+
+- **Structured Logging**: structlog with JSON output and correlation IDs
+- **Metrics**: Prometheus metrics collection
+- **Tracing**: OpenTelemetry distributed tracing with Jaeger
+- **Error Tracking**: Sentry integration for error monitoring
+- **Health Checks**: `/health`, `/ready` endpoints for monitoring
+
+**Implementation**: See `09-observability.mdc` for observability patterns.
+
+## BuildWorks-00004 Database Migrations
+
+AISTRALE uses **Alembic for database migrations**:
+
+- **Versioned Migrations**: All schema changes through Alembic migrations
+- **Rollback Support**: Ability to rollback migrations
+- **Migration History**: Tracked in database
+- **Automated**: Migrations run in CI/CD or on startup
+
+**Implementation**: See `07-database-migrations.mdc` for migration patterns.
+
+## BuildWorks-00005 Structured Error Handling
+
+AISTRALE implements **structured error handling**:
+
+- **Custom Exceptions**: BaseAPIException hierarchy for different error types
+- **Error Tracking**: Sentry integration for error monitoring
+- **User-Friendly Messages**: Clear error messages for API consumers
+- **Error Codes**: Standardized error codes for error categorization
+
+**Implementation**: See `10-error-handling.mdc` for error handling patterns.
+
+## BuildWorks-00006 Technology Stack Authority
+
+AISTRALE uses a **strictly defined technology stack**:
+
+- **Backend**: Python 3.11+, FastAPI, SQLModel, PostgreSQL 17 with pgvector
+- **Frontend**: Vite, React, TypeScript, Tailwind CSS
+- **LLM SDKs**: HuggingFace Hub, OpenAI SDK
+- **Infrastructure**: Docker, Redis, Prometheus, Grafana, Jaeger
+- **Testing**: pytest, pytest-asyncio
+
+**Implementation**: See `04-tech-stack.mdc` for complete technology stack registry.
+
+## BuildWorks-00007 Testing Standards
+
+AISTRALE requires **comprehensive testing**:
+
+- **Test Framework**: pytest with async support
+- **Test Structure**: `tests/unit/`, `tests/integration/`, `tests/e2e/`
+- **Coverage Target**: Aim for >80% test coverage
+- **CI/CD Integration**: Tests run on every PR
+
+**Implementation**: See `06-testing.mdc` for testing patterns.
+
+## BuildWorks-00008 Code Quality Standards
+
+AISTRALE enforces **strict code quality**:
+
+- **Linting**: flake8, pylint for Python; ESLint for TypeScript
+- **Formatting**: black, isort for Python; Prettier for TypeScript
+- **Type Checking**: mypy for Python; TypeScript strict mode
+- **Pre-commit Hooks**: Automated quality checks before commit
+
+**Implementation**: See `05-code-quality.mdc` for code quality patterns.
+
+## BuildWorks-00009 Security Hardening
+
+AISTRALE implements **security best practices**:
+
+- **Secrets Management**: Environment variables, no hardcoded secrets
+- **Rate Limiting**: Per-user/IP rate limiting
+- **Input Validation**: Pydantic models for all inputs
+- **Security Headers**: CSP, HSTS, X-Frame-Options
+- **Security Scanning**: Regular dependency and code scanning
+
+**Implementation**: See `08-auth-security.mdc` for security patterns.
+
+## BuildWorks-00010 Branding Standards
+
+AISTRALE uses **consistent branding**:
+
+- **Product Name**: AISTRALE
+- **Tagline**: "Turn AI from a black box into an engineered system"
+- **Company Name**: BuildWorks.AI
+- **Website**: https://aistrale.com
+- **Footer**: "AISTRALE Build by Buildworks.AI"
+- **Colors**: Deep Blue (#1565C0), Gold (#FF8F00), Teal (#00ACC1), Green (#388E3C)
+- **License**: Apache License 2.0
+- **Naming**: Use helper functions for branding consistency
+
+**Implementation**: See `19-branding-visual.mdc` for branding patterns.
+
+---
+
+**Next Steps**: Read `01-getting-started.mdc` for setup instructions, then review module-specific rules for your development area.

@@ -1,0 +1,227 @@
+---
+trigger: always_on
+description: Master rule registry and index for AISTRALE application
+globs: **/*
+---
+
+# AISTRALE — Master Rule Registry
+
+**Product**: AISTRALE - Turn AI from a black box into an engineered system  
+**Company**: BuildWorks.AI  
+**Website**: https://aistrale.com  
+**License**: Apache License 2.0
+
+**⚠️ CRITICAL**: This is the master index of all rules. Use this to navigate to specific rule files.
+
+## Rule Numbering System
+
+- **Numbering**: `BuildWorks-XXXXX` immutable IDs
+- **Categories**:
+  - 00001–00999: Core Principles & Getting Started
+  - 01000–01999: Quality Gates & Code Quality
+  - 02000–02999: Python Coding Standards
+  - 03000–03999: TypeScript Coding Standards
+  - 04000–04999: Testing Standards
+  - 05000–05999: Database Migrations
+  - 06000–06999: Authentication & Security
+  - 07000–07999: Observability & Monitoring
+  - 08000–08999: Error Handling
+  - 09000–09999: LLM Features
+  - 10000–10999: CI/CD & Deployment
+  - 11000–11999: Branding & Visual Identity
+  - 12000–12999: Technology Stack
+
+## Master Index
+
+### Foundation (00-01)
+- **Core Principles**: `00-core-principles.mdc` (BuildWorks-00001..00010)
+  - LLM-First Architecture
+  - Session-Based Authentication
+  - Observability-First Development
+  - Database Migrations
+  - Structured Error Handling
+  - Technology Stack Authority
+  - Testing Standards
+  - Code Quality Standards
+  - Security Hardening
+  - Branding Standards
+
+- **Getting Started**: `01-getting-started.mdc`
+  - Development environment setup
+  - Docker Compose configuration
+  - Database migrations
+  - Common tasks and troubleshooting
+
+### Technology & Standards (04-06)
+- **Tech Stack**: `04-tech-stack.mdc` (BuildWorks-12000..12006)
+  - Central tech stack registry
+  - Allowed/banned technologies
+  - LLM SDK standards
+  - Service integration examples
+
+- **Code Quality**: `05-code-quality.mdc` (BuildWorks-03001..03008)
+  - Python code quality tools (Black, isort, Flake8, mypy)
+  - TypeScript code quality tools (ESLint, Prettier)
+  - Code formatting standards
+  - Import organization
+  - Type hints and annotations
+  - Code review checklist
+  - Automated quality checks
+
+- **Python Standards**: `05-python-standards.mdc` (BuildWorks-02001..02012)
+  - Python version and environment
+  - FastAPI standards
+  - Pydantic model standards
+  - SQLModel standards
+  - Database operations
+  - Session-based authentication
+  - Error handling
+  - LLM SDK integration
+  - Testing standards
+  - Logging standards
+  - Async/await patterns
+
+- **TypeScript Standards**: `06-typescript-standards.mdc` (BuildWorks-04001..04012)
+  - TypeScript configuration
+  - React component standards
+  - Type definitions
+  - API client standards
+  - React hooks standards
+  - Form handling
+  - Error handling
+  - Routing standards
+  - Styling standards
+  - Testing standards
+  - Environment variables
+  - Code organization
+
+### Testing & Database (06-07)
+- **Testing Standards**: `06-testing.mdc` (BuildWorks-06001..06011)
+  - Testing framework setup
+  - Test structure
+  - Unit test patterns
+  - Integration test patterns
+  - Test fixtures
+  - Mocking external services
+  - Test coverage requirements
+  - E2E test patterns
+  - Test best practices
+  - CI/CD integration
+  - Test data management
+
+- **Database Migrations**: `07-database-migrations.mdc` (BuildWorks-07001..07009)
+  - Alembic configuration
+  - Creating migrations
+  - Migration best practices
+  - Running migrations
+  - Data migrations
+  - Migration history
+  - CI/CD integration
+  - Migration troubleshooting
+  - Model changes workflow
+
+### Security & Observability (08-09)
+- **Authentication & Security**: `08-auth-security.mdc` (BuildWorks-08001..08011)
+  - Session-based authentication
+  - Password security
+  - Role-based access control (RBAC)
+  - Secrets management
+  - Input validation
+  - Rate limiting
+  - Security headers
+  - CORS configuration
+  - API key management
+  - Security audit logging
+  - Security checklist
+
+- **Observability**: `09-observability.mdc` (BuildWorks-09001..09010)
+  - Observability stack (Phase 2 - Implemented)
+  - Structured logging
+  - Prometheus metrics
+  - Distributed tracing
+  - Error tracking (Sentry)
+  - Health checks
+  - Request/response logging
+  - Grafana dashboards
+  - Observability best practices
+  - LLM-specific observability
+
+### Error Handling & LLM Features (10-11)
+- **Error Handling**: `10-error-handling.mdc` (BuildWorks-10001..10008)
+  - Custom exception hierarchy
+  - Global exception handler
+  - Error handling patterns
+  - Frontend error handling
+  - Error recovery
+  - Error logging
+  - User-friendly error messages
+  - Error response format
+
+- **LLM Features**: `11-llm-features.mdc` (BuildWorks-11001..11007)
+  - LLM provider support
+  - Inference service
+  - Telemetry tracking
+  - Token management
+  - Future LLM features (prompt management, cost tracking, evaluation)
+  - LLM observability
+  - LLM best practices
+
+### Deployment & Branding (12, 19)
+- **CI/CD**: `12-ci-cd.mdc` (BuildWorks-12001..12008)
+  - CI/CD pipeline structure
+  - Deployment strategy
+  - Docker best practices
+  - Database migration in CI/CD
+  - Environment management
+  - Quality gates
+  - Rollback strategy
+  - CI/CD best practices
+
+- **Branding & Visual**: `19-branding-visual.mdc` (BuildWorks-11000..11008)
+  - Central branding registry
+  - Platform naming
+  - UI terminology standards
+  - Semantic color palette
+  - Component color enforcement
+  - Toast notifications
+  - Footer standards
+
+## Quick Reference
+
+### For New Developers
+1. Start with `00-core-principles.mdc` - Understand the architecture
+2. Read `01-getting-started.mdc` - Setup your environment
+3. Review `04-tech-stack.mdc` - Understand the technology choices
+4. Check `05-python-standards.mdc` or `06-typescript-standards.mdc` - Coding standards
+
+### For Backend Development
+- `05-python-standards.mdc` - Python/FastAPI patterns
+- `07-database-migrations.mdc` - Database changes
+- `08-auth-security.mdc` - Security patterns
+- `09-observability.mdc` - Logging and monitoring
+- `10-error-handling.mdc` - Error handling
+- `11-llm-features.mdc` - LLM-specific features
+
+### For Frontend Development
+- `06-typescript-standards.mdc` - TypeScript/React patterns
+- `19-branding-visual.mdc` - Branding and UI standards
+- `10-error-handling.mdc` - Error handling in React
+
+### For DevOps/CI/CD
+- `12-ci-cd.mdc` - CI/CD pipeline
+- `07-database-migrations.mdc` - Migration automation
+- `09-observability.mdc` - Monitoring setup
+
+### For Testing
+- `06-testing.mdc` - Testing standards and patterns
+- `05-code-quality.mdc` - Code quality requirements
+
+## Related Documentation
+
+- **Engineering Gaps Analysis**: `reports/engineering_gaps_analysis.md`
+- **Implementation Plan**: `planning/implementation_plan.md`
+- **Branding File**: `19-branding-visual.mdc` (also in `.cursor/rules/`)
+
+---
+
+**Questions?** Start with `00-core-principles.mdc` and `01-getting-started.mdc` for foundational understanding.

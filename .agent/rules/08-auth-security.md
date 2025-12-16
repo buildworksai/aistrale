@@ -1,0 +1,313 @@
+---
+trigger: always_on
+description: Authentication, authorization, and security standards for AISTRALE
+globs: backend/**/*.py, frontend/**/*.{ts,tsx}
+---
+
+# 🔐 AISTRALE Authentication & Security Standards
+
+**⚠️ CRITICAL**: Security is paramount. All security patterns must be followed strictly.
+
+## BuildWorks-08001 Session-Based Authentication
+
+### Implementation
+- **Session Storage**: Redis-backed sessions using `starsessions`
+- **Session Tokens**: HTTP-only cookies (not accessible via JavaScript)
+- **Session Expiration**: Configurable session timeout
+- **No JWT**: Pure session-based authentication only
+
+### Session Configuration
+```python
+# ✅ GOOD: Session middleware setup
+from starsessions import SessionMiddleware, SessionAutoloadMiddleware
+from starsessions.stores.redis import RedisStore
+from core.config import get_settings
+
+settings = get_settings()
+
+# Redis store for sessions
+store = RedisStore(settings.REDIS_URL)
+
+# Session middleware
+app.add_middleware(
+    SessionMiddleware,
+    store=store,
+    cookie_https_only=False,  # Set to True in production
+    cookie_max_age=86400,  # 24 hours
+    cookie_samesite="lax"
+)
+
+app.add_middleware(SessionAutoloadMiddleware)
+```
+
+## BuildWorks-08002 Password Security
+
+### Password Hashing
+```python
+# ✅ GOOD: Password hashing with bcrypt
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt."""
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password against hash."""
+    return pwd_context.verify(plain_password, hashed_password)
+```
+
+### Password Requirements
+- Minimum 8 characters
+- Should include uppercase, lowercase, numbers
+- Should not be common passwords
+- Store only hashed passwords (never plain text)
+
+## BuildWorks-08003 Role-Based Access Control (RBAC)
+
+### Role Definitions
+```python
+# ✅ GOOD: RBAC role definitions
+from enum import Enum
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+
+# Role checking
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Require admin role."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access required"
+        )
+    return current_user
+```
+
+### Route Protection
+```python
+# ✅ GOOD: Protected routes with role requirements
+from fastapi import Depends, HTTPException
+from core.security import get_current_user, require_admin
+
+@router.get("/api/v1/users/me")
+async def get_current_user_info(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """Get current user (authenticated users only)."""
+    return current_user
+
+@router.get("/api/v1/admin/users")
+async def get_all_users(
+    current_user: User = Depends(require_admin)
+) -> List[User]:
+    """Get all users (admin only)."""
+    # Implementation
+    pass
+```
+
+## BuildWorks-08004 Secrets Management
+
+### Environment Variables
+```python
+# ✅ GOOD: Secrets from environment variables
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    SECRET_KEY: str  # Must be set in environment
+    DATABASE_URL: str
+    REDIS_URL: str
+    SENTRY_DSN: str = ""
+    
+    class Config:
+        env_file = ".env"
+```
+
+### Secrets Best Practices
+- ✅ Never hardcode secrets in code
+- ✅ Use environment variables for all secrets
+- ✅ Use `.env` file for local development (not committed)
+- ✅ Use secret management service in production (AWS Secrets Manager, Vault)
+- ✅ Rotate secrets regularly
+- ✅ Never log secrets
+
+## BuildWorks-08005 Input Validation
+
+### Pydantic Validation
+```python
+# ✅ GOOD: Input validation with Pydantic
+from pydantic import BaseModel, EmailStr, Field, validator
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str = Field(..., min_length=1, max_length=100)
+    password: str = Field(..., min_length=8)
+    
+    @validator('password')
+    def validate_password(cls, v):
+        """Validate password strength."""
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
+        # Add more validation as needed
+        return v
+```
+
+### SQL Injection Prevention
+```python
+# ✅ GOOD: Parameterized queries (SQLModel handles this)
+from sqlmodel import Session, select
+
+def get_user_by_email(db: Session, email: str) -> Optional[User]:
+    """Get user by email (safe from SQL injection)."""
+    result = db.exec(select(User).where(User.email == email))
+    return result.first()
+```
+
+## BuildWorks-08006 Rate Limiting
+
+### Rate Limiting Implementation (To Be Implemented)
+```python
+# ✅ GOOD: Rate limiting pattern
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@router.post("/api/v1/inference")
+@limiter.limit("10/minute")
+async def run_inference(
+    request: Request,
+    inference_request: InferenceRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Run inference with rate limiting."""
+    # Implementation
+    pass
+```
+
+## BuildWorks-08007 Security Headers
+
+### Security Middleware
+```python
+# ✅ GOOD: Security headers middleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+
+# In production, enable HTTPS redirect
+# app.add_middleware(HTTPSRedirectMiddleware)
+
+# Add security headers
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+```
+
+## BuildWorks-08008 CORS Configuration
+
+### CORS Setup
+```python
+# ✅ GOOD: CORS configuration
+from fastapi.middleware.cors import CORSMiddleware
+from core.config import get_settings
+
+settings = get_settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS.split(","),
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+```
+
+## BuildWorks-08009 API Key Management
+
+### Token Storage
+```python
+# ✅ GOOD: Secure token storage
+from sqlmodel import Field
+from cryptography.fernet import Fernet
+from core.config import get_settings
+
+settings = get_settings()
+cipher = Fernet(settings.ENCRYPTION_KEY.encode())
+
+class Token(SQLModel, table=True):
+    """Token model with encrypted storage."""
+    id: Optional[str] = Field(default=None, primary_key=True)
+    provider: str
+    encrypted_token: str  # Encrypted token
+    user_id: str
+    
+    def set_token(self, token: str):
+        """Encrypt and store token."""
+        self.encrypted_token = cipher.encrypt(token.encode()).decode()
+    
+    def get_token(self) -> str:
+        """Decrypt and return token."""
+        return cipher.decrypt(self.encrypted_token.encode()).decode()
+```
+
+## BuildWorks-08010 Security Audit Logging
+
+### Audit Logging (Future)
+```python
+# ✅ GOOD: Security audit logging pattern
+import structlog
+
+logger = structlog.get_logger()
+
+def log_security_event(
+    event_type: str,
+    user_id: str,
+    details: dict
+):
+    """Log security-related events."""
+    logger.warning(
+        "security_event",
+        event_type=event_type,
+        user_id=user_id,
+        **details
+    )
+
+# Usage
+log_security_event(
+    "failed_login",
+    user_id=user_id,
+    details={"email": email, "ip": request.client.host}
+)
+```
+
+## BuildWorks-08011 Security Checklist
+
+Before deploying, ensure:
+- [ ] All secrets are in environment variables
+- [ ] No hardcoded credentials
+- [ ] HTTPS enabled in production
+- [ ] Security headers configured
+- [ ] CORS properly configured
+- [ ] Rate limiting implemented
+- [ ] Input validation on all endpoints
+- [ ] SQL injection prevention (using parameterized queries)
+- [ ] Session security configured
+- [ ] Password hashing implemented
+- [ ] Error messages don't leak sensitive information
+
+---
+
+**Next Steps**: 
+- Review `00-core-principles.mdc` for architectural principles
+- Check `09-observability.mdc` for security monitoring
+- Implement rate limiting and security headers
