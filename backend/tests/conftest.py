@@ -1,5 +1,6 @@
 import os
 import sys
+import types
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -61,6 +62,11 @@ _test_session_data = {}
 # Pytest loads this file as `conftest`, but some tests (and this file itself)
 # import `tests.conftest`, which would otherwise create a second module object
 # with a different `_test_session_data` dict.
+tests_pkg = sys.modules.get("tests")
+if tests_pkg is None:
+    tests_pkg = types.ModuleType("tests")
+    sys.modules["tests"] = tests_pkg
+setattr(tests_pkg, "conftest", sys.modules[__name__])
 sys.modules["tests.conftest"] = sys.modules[__name__]
 
 
