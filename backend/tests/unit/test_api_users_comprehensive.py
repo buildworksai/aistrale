@@ -13,6 +13,9 @@ class TestUsersAPI:
 
         app = client.app
 
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "admin"})
+
         def mock_get_session():
             return mock_session
 
@@ -61,6 +64,9 @@ class TestUsersAPI:
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
 
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "user"})
+
         # Set session as regular user
         # Note: Role check happens via require_admin dependency or
         # request.session
@@ -86,6 +92,9 @@ class TestUsersAPI:
 
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
+
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "admin"})
 
         # Set session as admin
         # Note: Role check happens via require_admin dependency or
@@ -121,6 +130,9 @@ class TestUsersAPI:
         from core.database import get_session
 
         app = client.app
+
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "admin"})
 
         def mock_get_session():
             return mock_session
@@ -162,6 +174,9 @@ class TestUsersAPI:
 
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
+
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "user"})
 
         # Set session as regular user
         # Note: Role check happens via require_admin dependency or

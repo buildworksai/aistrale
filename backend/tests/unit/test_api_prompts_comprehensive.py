@@ -222,6 +222,9 @@ class TestPromptsAPI:
 
         app = client.app
 
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "admin"})
+
         def mock_get_current_user_id():
             return 1
 
@@ -253,6 +256,9 @@ class TestPromptsAPI:
 
         app = client.app
 
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "user"})
+
         def mock_get_current_user_id():
             return 1
 
@@ -280,6 +286,9 @@ class TestPromptsAPI:
         from core.database import get_session
 
         app = client.app
+
+        import tests.conftest as conftest_module
+        conftest_module._test_session_data.update({"user_id": 1, "role": "admin"})
 
         def mock_get_current_user_id():
             return 1

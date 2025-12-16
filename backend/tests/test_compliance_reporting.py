@@ -3,12 +3,26 @@ from datetime import datetime, timedelta
 from services.compliance_service import ComplianceService
 from core.audit_logging import log_access
 from fastapi import Request
+from models.security_audit import SecurityAudit
 
 
 def test_soc2_report_generation(mock_session):
     service = ComplianceService(session=mock_session)
     start = datetime.utcnow() - timedelta(days=1)
     end = datetime.utcnow()
+
+    from unittest.mock import MagicMock
+    mock_result = MagicMock()
+    mock_result.all.return_value = [
+        SecurityAudit(
+            event_type="login_success",
+            user_id=1,
+            ip_address="127.0.0.1",
+            user_agent="test-agent",
+            details={},
+        )
+    ]
+    mock_session.exec.return_value = mock_result
 
     report_csv = service.generate_soc2_report(start, end)
     assert "Timestamp" in report_csv

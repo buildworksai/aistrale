@@ -949,24 +949,21 @@ class TestDepsDirect:
     def test_get_current_user_id_direct(self):
         """Test get_current_user_id directly."""
         from api.deps import get_current_user_id
-        from fastapi import Request, HTTPException
+        from fastapi import HTTPException
 
         # Success
-        request = MagicMock(spec=Request)
-        request.session = {"user_id": 1}
-        user_id = get_current_user_id(request)
+        user_id = get_current_user_id({"user_id": 1})
         assert user_id == 1
 
         # Not authenticated
-        request.session = {}
         with pytest.raises(HTTPException) as exc_info:
-            get_current_user_id(request)
+            get_current_user_id({})
         assert exc_info.value.status_code == 401
 
     def test_require_admin_direct(self, mock_session):
         """Test require_admin directly."""
         from api.deps import require_admin
-        from fastapi import Request, HTTPException
+        from fastapi import HTTPException
 
         # Success
         admin_user = User(
@@ -976,16 +973,12 @@ class TestDepsDirect:
             role="admin")
         mock_session.get.return_value = admin_user
 
-        request = MagicMock(spec=Request)
-        request.session = {"user_id": 1}
-
-        user_id = require_admin(request, mock_session)
+        user_id = require_admin({"user_id": 1}, mock_session)
         assert user_id == 1
 
         # Not authenticated
-        request.session = {}
         with pytest.raises(HTTPException) as exc_info:
-            require_admin(request, mock_session)
+            require_admin({}, mock_session)
         assert exc_info.value.status_code == 401
 
         # Not admin
@@ -993,16 +986,14 @@ class TestDepsDirect:
             id=1, email="user@example.com", password_hash="hashed", role="user"
         )
         mock_session.get.return_value = regular_user
-        request.session = {"user_id": 1}
 
         with pytest.raises(HTTPException) as exc_info:
-            require_admin(request, mock_session)
+            require_admin({"user_id": 1}, mock_session)
         assert exc_info.value.status_code == 403
 
         # User not found
         mock_session.get.return_value = None
-        request.session = {"user_id": 999}
 
         with pytest.raises(HTTPException) as exc_info:
-            require_admin(request, mock_session)
+            require_admin({"user_id": 999}, mock_session)
         assert exc_info.value.status_code == 403

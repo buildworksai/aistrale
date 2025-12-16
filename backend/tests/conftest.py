@@ -59,6 +59,13 @@ _test_session_data = {}
 
 
 @pytest.fixture(autouse=True)
+def reset_test_session_data():
+    """Reset shared session data before each test to avoid auth state leakage."""
+    _test_session_data.clear()
+    yield
+
+
+@pytest.fixture(autouse=True)
 def reset_rate_limiter():
     """Reset rate limiter state before each test to prevent 429 errors."""
     # Clear rate limiter state before each test

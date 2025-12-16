@@ -752,7 +752,6 @@ class TestDepsCoverage:
     def test_require_admin_all_paths(self, client, mock_session):
         """Test require_admin all paths - covers lines 21-25."""
         from api.deps import require_admin
-        from fastapi import Request
         from core.database import get_session
 
         app = client.app
@@ -760,13 +759,10 @@ class TestDepsCoverage:
 
         # User not found
         mock_session.get.return_value = None
-        request = MagicMock(spec=Request)
-        request.session = {"user_id": 999}
-
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            require_admin(request, mock_session)
+            require_admin({"user_id": 999}, mock_session)
         assert exc_info.value.status_code == 403
 
         # User not admin
@@ -774,10 +770,9 @@ class TestDepsCoverage:
             id=1, email="user@example.com", password_hash="hashed", role="user"
         )
         mock_session.get.return_value = regular_user
-        request.session = {"user_id": 1}
 
         with pytest.raises(HTTPException) as exc_info:
-            require_admin(request, mock_session)
+            require_admin({"user_id": 1}, mock_session)
         assert exc_info.value.status_code == 403
 
         app.dependency_overrides.clear()

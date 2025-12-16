@@ -48,7 +48,9 @@ class TestTokensAPI:
         mock_session.exec.return_value.all.return_value = []
         mock_session.add = MagicMock()
         mock_session.commit = MagicMock()
-        mock_session.refresh = MagicMock()
+        def mock_refresh(obj):
+            obj.id = 1
+        mock_session.refresh = MagicMock(side_effect=mock_refresh)
 
         # Mock the token.set_token method
         with patch.object(Token, "set_token"):
@@ -91,6 +93,10 @@ class TestTokensAPI:
             is_default=True,
         )
         mock_session.exec.return_value.all.return_value = [existing_token]
+
+        def mock_refresh(obj):
+            obj.id = 1
+        mock_session.refresh = MagicMock(side_effect=mock_refresh)
 
         with patch.object(Token, "set_token"):
             response = client.post(
