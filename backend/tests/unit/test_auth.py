@@ -2,16 +2,12 @@ from unittest.mock import patch, MagicMock
 
 from models.user import User
 
-# Test session data - will be patched into get_session_data
-# This is shared with conftest.py's _test_session_data
-_test_session_data = {}
+# Import the shared test session data from conftest
+from tests.conftest import _test_session_data
 
 
 @patch("api.auth.verify_password")
 def test_login_success(mock_verify_password, client, mock_session):
-    # Use the _test_session_data from conftest (already patched in client fixture)
-    from tests.conftest import _test_session_data
-    
     # Clear session data for this test
     _test_session_data.clear()
     
@@ -40,9 +36,6 @@ def test_login_success(mock_verify_password, client, mock_session):
 
 @patch("api.auth.verify_password")
 def test_login_failure(mock_verify_password, client, mock_session):
-    # Use the _test_session_data from conftest (already patched in client fixture)
-    from tests.conftest import _test_session_data
-    
     # Clear session data for this test
     _test_session_data.clear()
     
