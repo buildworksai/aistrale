@@ -96,10 +96,18 @@ def list_dlp_rules(
     user_id: int = Depends(get_current_user_id),
 ) -> List[DLPRule]:
     """List all DLP rules."""
-    rules = session.exec(
-        select(DLPRule).order_by(
-            DLPRule.priority.desc())).all()
-    return rules
+    try:
+        rules = session.exec(
+            select(DLPRule).order_by(
+                DLPRule.priority.desc())).all()
+        return rules
+    except Exception as e:
+        logger.error(
+            "dlp_rules_list_failed",
+            error=str(e),
+            user_id=user_id,
+        )
+        return []
 
 
 @router.post("/rules", response_model=DLPRuleRead, status_code=201)
