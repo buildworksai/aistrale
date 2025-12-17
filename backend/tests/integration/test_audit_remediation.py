@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+
 from models.prompt import Prompt
 from models.user import User
 

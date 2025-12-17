@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional, List
-from sqlmodel import Field, SQLModel, Relationship
+
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class EvaluationBase(SQLModel):
@@ -13,12 +13,12 @@ class EvaluationBase(SQLModel):
 
 
 class Evaluation(EvaluationBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user_id: int | None = Field(default=None, foreign_key="user.id")
 
-    results: List["EvaluationResult"] = Relationship(
+    results: list["EvaluationResult"] = Relationship(
         back_populates="evaluation")
 
 
@@ -26,12 +26,12 @@ class EvaluationResultBase(SQLModel):
     input: str
     output: str
     score: float
-    feedback: Optional[str] = None
+    feedback: str | None = None
     evaluation_id: int = Field(foreign_key="evaluation.id")
 
 
 class EvaluationResult(EvaluationResultBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     evaluation: Evaluation = Relationship(back_populates="results")
@@ -45,4 +45,4 @@ class EvaluationRead(EvaluationBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    user_id: Optional[int]
+    user_id: int | None

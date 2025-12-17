@@ -1,15 +1,16 @@
 """Compliance reporting service."""
 
-from datetime import datetime
-from typing import Dict, Any
 import csv
 import io
 import logging
-from sqlmodel import Session, select, and_
+from datetime import datetime
+from typing import Any
+
+from sqlmodel import Session, and_, select
 
 from models.security_audit import SecurityAudit
-from models.user import User
 from models.telemetry import Telemetry
+from models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ class ComplianceService:
 
         return output.getvalue()
 
-    def generate_gdpr_report(self, user_id: int) -> Dict[str, Any]:
+    def generate_gdpr_report(self, user_id: int) -> dict[str, Any]:
         """
         Generates a data portability report for a user.
         """
@@ -132,7 +133,7 @@ class ComplianceService:
 
     def generate_hipaa_report(
         self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generates a HIPAA compliance report focusing on PHI access.
         """

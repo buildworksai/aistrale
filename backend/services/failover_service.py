@@ -1,10 +1,13 @@
 import logging
 import random
-from typing import Dict, Any
-from services.health_service import HealthService
+from typing import Any
+
 from models.multi_provider import FailoverConfig
+from services.health_service import HealthService
 
 logger = logging.getLogger(__name__)
+
+SIMULATED_FAILURE_PROBABILITY = 0.5
 
 
 class FailoverService:
@@ -24,12 +27,14 @@ class FailoverService:
         )
 
     async def execute_with_failover(
-            self, task: str, prompt: str) -> Dict[str, Any]:
+            self, task: str, prompt: str) -> dict[str, Any]:
         """
         Execute an inference task with automatic failover logic.
         """
-        providers = [self.config.primary_provider] + \
-            self.config.fallback_providers
+        providers = [
+            self.config.primary_provider,
+            *self.config.fallback_providers,
+        ]
         errors = []
 
         for provider in providers:
@@ -66,7 +71,7 @@ class FailoverService:
         # interaction instead
         if provider == "openai":
             # Simulate generic failure
-            if random.random() > 0.5:
+            if random.random() > SIMULATED_FAILURE_PROBABILITY:
                 raise Exception("Connection timeout")
 
         return f"Response from {provider}"

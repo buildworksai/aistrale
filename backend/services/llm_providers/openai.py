@@ -1,10 +1,9 @@
 """OpenAI provider implementation."""
 
-from typing import Optional, Dict
 
 from openai import AsyncOpenAI
 
-from services.llm_providers.base import LLMProvider, InferenceResult
+from services.llm_providers.base import InferenceResult, LLMProvider
 
 
 class OpenAIProvider(LLMProvider):
@@ -25,7 +24,7 @@ class OpenAIProvider(LLMProvider):
             self,
             model: str,
             input_text: str,
-            history: Optional[list] = None,
+            history: list | None = None,
             **kwargs) -> InferenceResult:
         """Run OpenAI inference."""
         history = history or []
@@ -51,7 +50,7 @@ class OpenAIProvider(LLMProvider):
             output_tokens=output_tokens,
         )
 
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """Get OpenAI pricing per 1M tokens."""
         # Pricing per 1M tokens
         pricing = {

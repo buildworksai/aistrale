@@ -1,9 +1,11 @@
 """Tests for security audit API."""
 
-import pytest
 from unittest.mock import MagicMock
-from models.user import User
+
+import pytest
+
 from models.security_audit import SecurityAudit
+from models.user import User
 
 
 @pytest.fixture
@@ -83,8 +85,9 @@ class TestSecurityAuditAPI:
     def test_list_audit_events_non_admin(
             self, client, mock_session, regular_user):
         """Test listing audit events as non-admin should fail."""
-        from api import security_audit
         from fastapi import HTTPException
+
+        from api import security_audit
 
         app = client.app
 

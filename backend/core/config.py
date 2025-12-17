@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     JAEGER_ENABLED: bool = True
     TESTING: bool = False
 
+    ADMIN_SEED_EMAIL: str | None = None
+    ADMIN_SEED_PASSWORD: str | None = None
+
     model_config = ConfigDict(env_file=".env")
 
 

@@ -1,16 +1,17 @@
 """Data Loss Prevention API endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlmodel import Session, select
-from pydantic import BaseModel, ConfigDict
+import re
 
-from core.database import get_session
+import structlog
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, ConfigDict
+from sqlmodel import Session, select
+
 from api.deps import get_current_user_id, require_admin
+from core.database import get_session
+from models.dlp_rule import DLPAction, DLPRule
 from services.dlp_service import DLPService
 from services.pii_detection_service import PIIDetectionService
-from models.dlp_rule import DLPRule, DLPAction
-import structlog
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -23,7 +24,7 @@ class RedactRequest(BaseModel):
 class RedactResponse(BaseModel):
     redacted_text: str
     is_blocked: bool
-    violations: List[str]
+    violations: list[str]
 
 
 class DLPRuleCreate(BaseModel):
@@ -46,11 +47,11 @@ class DLPRuleRead(BaseModel):
 
 
 class DLPRuleUpdate(BaseModel):
-    name: Optional[str] = None
-    pattern: Optional[str] = None
-    action: Optional[DLPAction] = None
-    is_active: Optional[bool] = None
-    priority: Optional[int] = None
+    name: str | None = None
+    pattern: str | None = None
+    action: DLPAction | None = None
+    is_active: bool | None = None
+    priority: int | None = None
 
 
 class DLPViolationRead(BaseModel):
@@ -89,12 +90,12 @@ def redact_pii(
     )
 
 
-@router.get("/rules", response_model=List[DLPRuleRead])
+@router.get("/rules", response_model=list[DLPRuleRead])
 def list_dlp_rules(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> List[DLPRule]:
+) -> list[DLPRule]:
     """List all DLP rules."""
     try:
         rules = session.exec(
@@ -119,14 +120,12 @@ def create_dlp_rule(
 ) -> DLPRule:
     """Create a new DLP rule (admin only)."""
     # Validate regex pattern
-    import re
-
     try:
         re.compile(rule_data.pattern)
     except re.error as e:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid regex pattern: {e}")
+            detail=f"Invalid regex pattern: {e}") from e
 
     rule = DLPRule(
         name=rule_data.name,
@@ -180,14 +179,12 @@ def update_dlp_rule(
         rule.name = rule_data.name
     if rule_data.pattern:
         # Validate regex pattern
-        import re
-
         try:
             re.compile(rule_data.pattern)
         except re.error as e:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid regex pattern: {e}")
+                detail=f"Invalid regex pattern: {e}") from e
         rule.pattern = rule_data.pattern
     if rule_data.action:
         rule.action = rule_data.action

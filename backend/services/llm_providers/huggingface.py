@@ -2,12 +2,12 @@
 
 import base64
 import io
-from typing import Optional, Dict, Any
+from typing import Any
 
 import httpx
 from huggingface_hub import AsyncInferenceClient
 
-from services.llm_providers.base import LLMProvider, InferenceResult
+from services.llm_providers.base import InferenceResult, LLMProvider
 
 
 class HuggingFaceProvider(LLMProvider):
@@ -30,7 +30,7 @@ class HuggingFaceProvider(LLMProvider):
         self,
         model: str,
         input_text: str,
-        history: Optional[list] = None,
+        history: list | None = None,
         task: str = "auto",
         **kwargs,
     ) -> InferenceResult:
@@ -107,7 +107,7 @@ class HuggingFaceProvider(LLMProvider):
                             "binary_data": b64_data,
                             "mime_type": "video/mp4"}
                     except AttributeError:
-                        raise e
+                        raise e from None
                 elif "conversational" in error_str and (
                     "supported task" in error_str or "available tasks" in error_str
                 ):
@@ -135,7 +135,9 @@ class HuggingFaceProvider(LLMProvider):
                         )
 
                     if response.status_code != 200:  # noqa: PLR2004
-                        raise Exception(f"Inference failed: {response.text}")
+                        raise RuntimeError(
+                            f"Inference failed: {response.text}"
+                        ) from e
 
                     try:
                         result = response.json()
@@ -144,7 +146,7 @@ class HuggingFaceProvider(LLMProvider):
                             response.content).decode("utf-8")
                         result = {"binary_data": b64_data}
                 else:
-                    raise e
+                    raise
 
         return InferenceResult(
             output=result,
@@ -152,7 +154,7 @@ class HuggingFaceProvider(LLMProvider):
             output_tokens=output_tokens,
         )
 
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """Get HuggingFace pricing (typically free for inference endpoints)."""
         # HuggingFace inference endpoints are typically free
         # Paid inference endpoints would have pricing here

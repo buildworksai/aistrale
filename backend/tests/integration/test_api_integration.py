@@ -1,5 +1,6 @@
-from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
+
+from fastapi.testclient import TestClient
 
 from core.security import get_password_hash
 from models.user import User
@@ -13,8 +14,9 @@ def test_health_check(client: TestClient):
 
 def test_readiness_check(client: TestClient, mock_session):
     # Mock the database connection check
-    from core.database import engine
     from unittest.mock import patch
+
+    from core.database import engine
 
     with patch.object(engine, "connect") as mock_connect:
         mock_connection = MagicMock()

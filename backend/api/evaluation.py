@@ -1,15 +1,18 @@
 """Evaluation API endpoints."""
 
-from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlmodel import Session, select
-from pydantic import BaseModel, ConfigDict
+from typing import Any
 
-from core.database import get_session
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, ConfigDict
+from sqlmodel import Session, select
+
 from api.deps import get_current_user_id
+from core.database import get_session
 from models.evaluation import Evaluation, EvaluationResult
 
 router = APIRouter()
+
+PASS_SCORE_THRESHOLD = 0.7
 
 
 class EvaluationCreate(BaseModel):
@@ -28,17 +31,17 @@ class EvaluationRead(BaseModel):
     prompt_id: int
     created_at: str
     updated_at: str
-    user_id: Optional[int]
+    user_id: int | None
 
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.get("/", response_model=List[EvaluationRead])
+@router.get("/", response_model=list[EvaluationRead])
 def list_evaluations(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> List[Evaluation]:
+) -> list[Evaluation]:
     """List all evaluation suites."""
     evaluations = session.exec(
         select(Evaluation).where(Evaluation.user_id == user_id)
@@ -73,7 +76,7 @@ def get_evaluation_results(
     evaluation_id: int,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get evaluation results."""
     evaluation = session.get(Evaluation, evaluation_id)
     if not evaluation or evaluation.user_id != user_id:
@@ -83,10 +86,9 @@ def get_evaluation_results(
         EvaluationResult.evaluation_id == evaluation_id)).all()
 
     total_tests = len(results)
-    passed = sum(1 for r in results if r.score >= 0.7)
+    passed = sum(1 for r in results if r.score >= PASS_SCORE_THRESHOLD)
     failed = total_tests - passed
-    avg_score = sum(r.score for r in results) / \
-        total_tests if total_tests > 0 else 0
+    avg_score = sum(r.score for r in results) / total_tests if total_tests > 0 else 0
 
     return {
         "evaluation": evaluation,
@@ -106,7 +108,7 @@ def run_evaluation(
     evaluation_id: int,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run an evaluation suite."""
     evaluation = session.get(Evaluation, evaluation_id)
     if not evaluation or evaluation.user_id != user_id:

@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from models.cost_optimization import ProviderPerformance
 
 logger = logging.getLogger(__name__)
@@ -11,11 +12,12 @@ class QualityScoringService:
     """
 
     def calculate_quality_score(
-        self, text: str, user_feedback: Optional[int] = None
+        self, text: str, user_feedback: int | None = None
     ) -> float:
         """
         Calculate a quality score (0.0 to 1.0).
-        For V1: Uses user feedback (1-5 stars) normalized, or heuristic based on length/structure.
+        For V1: Uses user feedback (1-5 stars) normalized, or heuristic based on
+        length/structure.
         """
         if user_feedback:
             # Normalize 1-5 to 0.0-1.0
@@ -27,8 +29,8 @@ class QualityScoringService:
         return round(length_score, 2)
 
     def analyze_tradeoff(
-        self, providers: List[ProviderPerformance], min_quality: float = 0.8
-    ) -> Dict[str, Any]:
+        self, providers: list[ProviderPerformance], min_quality: float = 0.8
+    ) -> dict[str, Any]:
         """
         Analyze cost vs quality to find 'best value' and 'best quality' options.
         """

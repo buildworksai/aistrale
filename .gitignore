@@ -61,6 +61,10 @@ dmypy.json
 # Jupyter
 .ipynb_checkpoints
 
+# Coverage reports
+htmlcov/
+backend/htmlcov/
+
 # Logs
 *.log
 logs/
@@ -89,6 +93,9 @@ build/
 *.tmp
 *.temp
 .cache/
+
+# Media artifacts
+*.mp4
 
 # OS
 Thumbs.db

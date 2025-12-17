@@ -1,6 +1,8 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from sqlmodel import Session
+
 from models.evaluation import Evaluation
 from models.prompt import Prompt
 from models.token import Token
@@ -23,6 +25,7 @@ async def test_run_evaluation(mock_session: Session):
     prompt = Prompt(id=1, name="test", template="test", user_id=1)
     # Create properly encrypted token
     from cryptography.fernet import Fernet
+
     from core.config import get_settings
 
     settings = get_settings()

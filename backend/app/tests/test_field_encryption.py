@@ -1,7 +1,8 @@
-import pytest
 import os
+
+import pytest
 from app.services.field_encryption_service import FieldEncryptionService
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 
 def test_encryption_initialization_generated_key():
@@ -33,5 +34,5 @@ def test_encrypt_decrypt_cycle():
 
 def test_decrypt_invalid_token():
     service = FieldEncryptionService()
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidToken):
         service.decrypt_field("invalid_token_string")

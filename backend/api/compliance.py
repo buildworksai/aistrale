@@ -1,14 +1,15 @@
 """Compliance reporting API endpoints."""
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from sqlmodel import Session
-from pydantic import BaseModel
 
-from core.database import get_session
-from api.deps import require_admin
-from services.compliance_service import ComplianceService
 import structlog
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel
+from sqlmodel import Session
+
+from api.deps import require_admin
+from core.database import get_session
+from services.compliance_service import ComplianceService
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -52,11 +53,14 @@ def generate_gdpr_export(
 
         return {
             "status": "completed",
-            "report_id": f"gdpr_{gdpr_request.user_id}_{result.get('generated_at', 'now')}",
+            "report_id": (
+                f"gdpr_{gdpr_request.user_id}_"
+                f"{result.get('generated_at', 'now')}"
+            ),
             "data": result,
         }
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.post("/soc2-report")
@@ -86,7 +90,11 @@ def generate_soc2_report(
         content=csv_content,
         media_type="text/csv",
         headers={
-            "Content-Disposition": f'attachment; filename="soc2_report_{datetime.utcnow().strftime("%Y%m%d")}.csv"'
+            "Content-Disposition": (
+                "attachment; filename=\"soc2_report_"
+                f"{datetime.utcnow().strftime('%Y%m%d')}"
+                ".csv\""
+            )
         },
     )
 

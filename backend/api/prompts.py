@@ -1,12 +1,12 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlmodel import Session, select, desc
 from datetime import datetime
+from typing import Any
 
-from core.database import get_session
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlmodel import Session, desc, select
+
 from api.deps import get_current_user_id, get_session_data
+from core.database import get_session
 from models.prompt import Prompt, PromptCreate, PromptRead, PromptUpdate
-from typing import Dict, Any
 
 router = APIRouter()
 
@@ -27,7 +27,10 @@ def create_prompt(
     if existing_prompt:
         raise HTTPException(
             status_code=400,
-            detail="Prompt with this name already exists. Use update to create new version.",
+            detail=(
+                "Prompt with this name already exists. Use update to create new "
+                "version."
+            ),
         )
 
     prompt = Prompt.model_validate(prompt_data)
@@ -38,7 +41,7 @@ def create_prompt(
     return prompt
 
 
-@router.get("/", response_model=List[PromptRead])
+@router.get("/", response_model=list[PromptRead])
 def read_prompts(
     request: Request,
     offset: int = 0,
@@ -99,7 +102,7 @@ def delete_prompt(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ):
     # Check if admin
     if session_data.get("role") != "admin":

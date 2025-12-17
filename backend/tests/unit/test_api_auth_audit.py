@@ -1,6 +1,7 @@
 """Tests for auth API audit logging."""
 
 from unittest.mock import MagicMock, patch
+
 from models.user import User
 
 

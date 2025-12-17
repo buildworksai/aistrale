@@ -1,16 +1,18 @@
 """Direct API endpoint tests using dependency injection to achieve >90% coverage."""
 
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from models.user import User
-from models.token import Token
-from models.telemetry import Telemetry
+from cryptography.fernet import Fernet
+
+from core.config import get_settings
+from models.chat import ChatMessage
 from models.prompt import Prompt
 from models.security_audit import SecurityAudit
-from models.chat import ChatMessage
-from cryptography.fernet import Fernet
-from core.config import get_settings
-from datetime import datetime, timedelta
+from models.telemetry import Telemetry
+from models.token import Token
+from models.user import User
 
 
 class TestPromptsDirect:
@@ -948,8 +950,9 @@ class TestDepsDirect:
 
     def test_get_current_user_id_direct(self):
         """Test get_current_user_id directly."""
-        from api.deps import get_current_user_id
         from fastapi import HTTPException
+
+        from api.deps import get_current_user_id
 
         # Success
         user_id = get_current_user_id({"user_id": 1})
@@ -962,8 +965,9 @@ class TestDepsDirect:
 
     def test_require_admin_direct(self, mock_session):
         """Test require_admin directly."""
-        from api.deps import require_admin
         from fastapi import HTTPException
+
+        from api.deps import require_admin
 
         # Success
         admin_user = User(

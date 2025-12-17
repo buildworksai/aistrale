@@ -1,10 +1,12 @@
 import logging
 import statistics
-from typing import List
 from datetime import datetime
+
 from models.reliability import PerformanceBenchmark
 
 logger = logging.getLogger(__name__)
+
+DEGRADATION_THRESHOLD_PERCENT = 20.0
 
 
 class ReliabilityBenchmarkService:
@@ -47,19 +49,24 @@ class ReliabilityBenchmarkService:
             deviation = (
                 (value - baseline.baseline_value) / baseline.baseline_value
             ) * 100
-            if deviation > 20:  # 20% degradation threshold
+            if deviation > DEGRADATION_THRESHOLD_PERCENT:
                 logger.warning(
-                    f"PERFORMANCE ALERT: {provider} {metric} is {value}, {deviation:.1f}% worse than baseline {baseline.baseline_value}"
+                    "PERFORMANCE ALERT: %s %s is %s, %.1f%% worse than baseline %s",
+                    provider,
+                    metric,
+                    value,
+                    deviation,
+                    baseline.baseline_value,
                 )
 
-    def get_benchmarks(self, provider: str) -> List[PerformanceBenchmark]:
+    def get_benchmarks(self, provider: str) -> list[PerformanceBenchmark]:
         return [b for b in self._benchmarks if b.provider == provider]
 
     def update_baseline(
             self,
             provider: str,
             metric: str,
-            new_values: List[float]):
+            new_values: list[float]):
         """
         Update the baseline using recent data.
         """

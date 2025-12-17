@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+
 from pydantic import BaseModel
 
 
@@ -12,5 +12,5 @@ class Region(str, Enum):
 
 
 class DataRegionConfig(BaseModel):
-    allowed_regions: List[Region]
+    allowed_regions: list[Region]
     default_region: Region = Region.US_EAST_1

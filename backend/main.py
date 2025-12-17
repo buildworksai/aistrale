@@ -1,26 +1,14 @@
-from api import (
-    multi_provider,
-    reliability,
-    webhooks,
-    security_audit,
-    dlp,
-    cost,
-    compliance,
-    workspaces,
-    projects,
-    permissions,
-    regions,
-    evaluation,
-)
-from api import admin
 import os
+import sys
+import traceback
 import uuid
 from contextlib import asynccontextmanager
 
 import sentry_sdk
 import structlog
 from alembic.config import Config
-from fastapi import FastAPI, Request, HTTPException
+from alembic.script import ScriptDirectory
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -29,6 +17,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from sqlalchemy import text
 from sqlmodel import Session, select
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 from starsessions.stores.memory import InMemoryStore
@@ -37,13 +26,34 @@ from starsessions.stores.redis import RedisStore
 from alembic import command
 
 # Local imports
-from api import auth, inference, prompts, telemetry, tokens, users
+from api import (
+    admin,
+    auth,
+    compliance,
+    cost,
+    dlp,
+    evaluation,
+    inference,
+    multi_provider,
+    permissions,
+    projects,
+    prompts,
+    regions,
+    reliability,
+    security_audit,
+    telemetry,
+    tokens,
+    users,
+    webhooks,
+    workspaces,
+)
 from core.branding import get_full_product_name
 from core.config import get_settings
 from core.database import engine
 from core.exceptions import BaseAPIException
 from core.limiter import limiter
 from core.logging_config import configure_logging
+from core.scheduler import shutdown_scheduler, start_scheduler
 from core.security import get_password_hash
 from core.security_headers import SecurityHeadersMiddleware
 from core.tracing import configure_tracing
@@ -77,9 +87,7 @@ async def lifespan(app: FastAPI):
                 settings.DATABASE_URL))
         # Check for multiple heads and upgrade to all heads if needed
         try:
-            from alembic import script
-
-            script_dir = script.ScriptDirectory.from_config(alembic_cfg)
+            script_dir = ScriptDirectory.from_config(alembic_cfg)
             heads = script_dir.get_revisions("heads")
             if len(heads) > 1:
                 # Multiple heads - upgrade to all heads
@@ -95,26 +103,29 @@ async def lifespan(app: FastAPI):
 
     # Seed admin user
     try:
-        with Session(engine) as session:
-            admin = session.exec(
-                select(User).where(User.email == "admin@buildworks.ai")
-            ).first()
-            if not admin:
-                admin = User(
-                    email="admin@buildworks.ai",
-                    password_hash=get_password_hash("admin@134"),
-                    role="admin",
-                )
-                session.add(admin)
-                session.commit()
-                logger.info("admin_user_seeded")
+        if settings.TESTING or os.getenv("TESTING", "false").lower() == "true":
+            logger.info("admin_seed_skipped_testing")
+        elif not settings.ADMIN_SEED_EMAIL or not settings.ADMIN_SEED_PASSWORD:
+            logger.info("admin_seed_skipped_missing_env")
+        else:
+            with Session(engine) as session:
+                admin = session.exec(
+                    select(User).where(User.email == settings.ADMIN_SEED_EMAIL)
+                ).first()
+                if not admin:
+                    admin = User(
+                        email=settings.ADMIN_SEED_EMAIL,
+                        password_hash=get_password_hash(settings.ADMIN_SEED_PASSWORD),
+                        role="admin",
+                    )
+                    session.add(admin)
+                    session.commit()
+                    logger.info("admin_user_seeded")
     except Exception as e:
         logger.error("admin_seed_failed", error=str(e))
 
     # Start scheduler
     try:
-        from core.scheduler import start_scheduler
-
         start_scheduler()
         logger.info("scheduler_started")
     except Exception as e:
@@ -124,8 +135,6 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("application_shutting_down")
-    from core.scheduler import shutdown_scheduler
-
     shutdown_scheduler()
     logger.info("scheduler_shutdown")
 
@@ -203,7 +212,7 @@ async def cors_fallback_middleware(request: Request, call_next):
                 response.headers["Access-Control-Allow-Origin"] = origin
                 response.headers["Access-Control-Allow-Credentials"] = "true"
         return response
-    except Exception as e:
+    except Exception:
         # Re-raise exception so exception handlers can process it
         # Exception handlers will add CORS headers
         raise
@@ -278,22 +287,20 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle all unhandled exceptions (500 errors) with CORS headers."""
-    import traceback
-    import sys
-    import os
-
     # In testing, include the actual error message for debugging
     # Check environment variable directly to avoid cached settings issue
     is_testing = os.getenv(
         "TESTING",
         "false").lower() == "true" or settings.TESTING
     # Always include error details in test mode for debugging
-    error_detail = f"{type(exc).__name__}: {str(exc)}" if is_testing else "Internal server error"
+    error_detail = (
+        f"{type(exc).__name__}: {exc!s}" if is_testing else "Internal server error"
+    )
     if is_testing:
         # Print full traceback in testing for debugging
-        print(f"\n=== EXCEPTION IN TESTING MODE ===", file=sys.stderr)
+        print("\n=== EXCEPTION IN TESTING MODE ===", file=sys.stderr)
         print(f"Type: {type(exc).__name__}", file=sys.stderr)
-        print(f"Message: {str(exc)}", file=sys.stderr)
+        print(f"Message: {exc!s}", file=sys.stderr)
         traceback.print_exception(
             type(exc),
             exc,
@@ -391,8 +398,8 @@ def health_check():
 async def readiness_check():
     # Check DB connection
     try:
-        with Session(engine) as session:
-            session.exec(select(User).limit(1))
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
     except Exception as e:
         logger.error("readiness_check_failed", error=str(e))
         return JSONResponse(

@@ -1,10 +1,11 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+
+from api.deps import get_current_user_id
 from models.prompt import Prompt
 from models.user import User
-
-from api.deps import get_current_user_id, get_session_data
 
 
 def test_create_prompt(client: TestClient, mock_session: Session):

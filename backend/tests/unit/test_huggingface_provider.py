@@ -1,7 +1,9 @@
 """Tests for HuggingFace provider."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
 from services.llm_providers.huggingface import HuggingFaceProvider
 
 

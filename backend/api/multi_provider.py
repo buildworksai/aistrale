@@ -1,10 +1,12 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
-from typing import List, Dict, Any, Optional
-from services.health_service import HealthService
-from services.comparison_service import ComparisonService
-from services.ab_test_service import ABTestService
-from services.model_abstraction_service import ModelAbstractionService
+
 from models.multi_provider import ProviderHealth
+from services.ab_test_service import ABTestService
+from services.comparison_service import ComparisonService
+from services.health_service import HealthService
+from services.model_abstraction_service import ModelAbstractionService
 
 router = APIRouter()
 
@@ -26,7 +28,7 @@ def get_model_abstraction_service():
     return ModelAbstractionService()
 
 
-@router.get("/health", response_model=List[ProviderHealth])
+@router.get("/health", response_model=list[ProviderHealth])
 def get_provider_health(service: HealthService = Depends(get_health_service)):
     """Get health status of all providers."""
     return service.monitor_all()
@@ -47,7 +49,7 @@ def compare_providers(
 async def start_ab_test(
     name: str,
     prompt: str,
-    providers: List[str],
+    providers: list[str],
     service: ABTestService = Depends(get_ab_test_service),
 ):
     """Start an A/B test."""
@@ -75,7 +77,7 @@ def list_routing_rules():
 
 
 @router.post("/routing")
-def create_routing_rule(rule: Dict[str, Any]):
+def create_routing_rule(rule: dict[str, Any]):
     """Create a smart routing rule."""
     return {"id": 1, **rule}
 
@@ -91,7 +93,7 @@ def list_models(
 @router.post("/resolve-model")
 def resolve_model_name(
     unified_name: str = Query(..., description="Unified model name to resolve"),
-    preferred_provider: Optional[str] = Query(None, description="Preferred provider"),
+    preferred_provider: str | None = Query(None, description="Preferred provider"),
     service: ModelAbstractionService = Depends(get_model_abstraction_service),
 ):
     """Resolve a unified model name to a provider-specific model."""

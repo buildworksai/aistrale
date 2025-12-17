@@ -1,8 +1,9 @@
 """Comprehensive tests for auth API endpoints."""
 
 from unittest.mock import MagicMock, patch
-from models.user import User
+
 from core.security import get_password_hash
+from models.user import User
 
 
 class TestAuthAPI:
@@ -97,8 +98,9 @@ class TestAuthAPI:
 
     def test_logout(self, client, mock_session):
         """Test logout."""
-        from core.database import get_session
         from unittest.mock import patch
+
+        from core.database import get_session
 
         app = client.app
         app.dependency_overrides[get_session] = lambda: mock_session
@@ -129,8 +131,9 @@ class TestAuthAPI:
 
     def test_get_current_user_authenticated(self, client, mock_session):
         """Test getting current user when authenticated."""
-        from core.database import get_session
         from unittest.mock import patch
+
+        from core.database import get_session
 
         user = User(
             id=1,
@@ -180,8 +183,9 @@ class TestAuthAPI:
 
     def test_get_current_user_not_found(self, client, mock_session):
         """Test getting current user when user doesn't exist."""
-        from core.database import get_session
         from unittest.mock import patch
+
+        from core.database import get_session
 
         # Login first with a user
         user = User(

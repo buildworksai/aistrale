@@ -1,6 +1,7 @@
 """Comprehensive tests for users API endpoints."""
 
 from unittest.mock import MagicMock
+
 from models.user import User
 
 

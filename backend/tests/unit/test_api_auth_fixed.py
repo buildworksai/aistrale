@@ -1,8 +1,9 @@
 """Fixed comprehensive tests for auth API endpoints."""
 
 from unittest.mock import MagicMock, patch
-from models.user import User
+
 from core.security import get_password_hash
+from models.user import User
 
 
 class TestAuthAPI:

@@ -1,5 +1,5 @@
-from typing import Optional
 from enum import Enum
+
 from sqlmodel import Field, SQLModel
 
 
@@ -10,7 +10,7 @@ class DLPAction(str, Enum):
 
 
 class DLPRule(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     __table_args__ = {"extend_existing": True}
     name: str = Field(index=True)
     pattern: str  # Regex pattern

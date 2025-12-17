@@ -1,7 +1,9 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
-from typing import Dict, Any
-from services.queue_service import QueueService
+
 from services.circuit_breaker_service import CircuitBreakerService
+from services.queue_service import QueueService
 from services.reliability_benchmark_service import ReliabilityBenchmarkService
 
 router = APIRouter()
@@ -26,7 +28,7 @@ def get_benchmark_service():
 
 @router.post("/queue/enqueue")
 async def enqueue_request(
-    task: Dict[str, Any],
+    task: dict[str, Any],
     priority: int = 1,
     service: QueueService = Depends(get_queue_service),
 ):
@@ -92,7 +94,7 @@ def list_load_balancers():
 
 
 @router.post("/load-balancers")
-def create_load_balancer(balancer: Dict[str, Any]):
+def create_load_balancer(balancer: dict[str, Any]):
     """Create a load balancer."""
     return {"id": 1, **balancer}
 

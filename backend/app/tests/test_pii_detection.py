@@ -1,7 +1,8 @@
-from app.services.pii_detection_service import PIIDetectionService
-import pytest
-from unittest.mock import MagicMock, patch
 import sys
+from unittest.mock import MagicMock, patch
+
+import pytest
+from app.services.pii_detection_service import PIIDetectionService
 
 # Mock dependencies before import
 sys.modules["spacy"] = MagicMock()

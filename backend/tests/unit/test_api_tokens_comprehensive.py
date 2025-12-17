@@ -1,10 +1,12 @@
 """Comprehensive tests for tokens API endpoints."""
 
-import pytest
 from unittest.mock import MagicMock, patch
-from models.token import Token
+
+import pytest
 from cryptography.fernet import Fernet
+
 from core.config import get_settings
+from models.token import Token
 
 
 class TestTokensAPI:

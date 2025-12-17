@@ -20,6 +20,8 @@ services:
       - SENTRY_DSN=${SENTRY_DSN:-}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production-use-strong-random-key}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-NNhJa8dRTe9uryu87t9NBcYnwa1cqICrY2uSDI9VxsY=}
+      - ADMIN_SEED_EMAIL=${ADMIN_SEED_EMAIL}
+      - ADMIN_SEED_PASSWORD=${ADMIN_SEED_PASSWORD}
       - COMPANY_NAME=${COMPANY_NAME:-BuildWorks.AI}
       - PRODUCT_NAME=${PRODUCT_NAME:-AISTRALE}
       - PRODUCT_TAGLINE=${PRODUCT_TAGLINE:-Turn AI from a black box into an engineered system}

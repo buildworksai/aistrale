@@ -1,5 +1,6 @@
-import logging
 import functools
+import logging
+
 from fastapi import Request
 
 # This is a simplified logger. In a real app, it would write to the DB via

@@ -1,7 +1,9 @@
-from services.dlp_service import DLPService
-import pytest
-from unittest.mock import MagicMock
 import sys
+from unittest.mock import MagicMock
+
+import pytest
+
+from services.dlp_service import DLPService
 
 # Mock dependencies before import
 sys.modules["spacy"] = MagicMock()

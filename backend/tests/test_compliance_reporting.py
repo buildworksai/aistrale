@@ -1,9 +1,11 @@
-import pytest
 from datetime import datetime, timedelta
-from services.compliance_service import ComplianceService
-from core.audit_logging import log_access
+
+import pytest
 from fastapi import Request
+
+from core.audit_logging import log_access
 from models.security_audit import SecurityAudit
+from services.compliance_service import ComplianceService
 
 
 def test_soc2_report_generation(mock_session):

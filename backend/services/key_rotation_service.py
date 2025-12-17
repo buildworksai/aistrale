@@ -2,7 +2,6 @@
 
 import uuid
 from datetime import datetime
-from typing import Tuple
 
 from cryptography.fernet import Fernet
 from sqlmodel import Session, select
@@ -51,7 +50,7 @@ class KeyRotationService:
         self.session.commit()
         return key_record
 
-    def rotate_key(self) -> Tuple[str, int]:
+    def rotate_key(self) -> tuple[str, int]:
         """
         Rotate encryption key and re-encrypt all tokens.
 

@@ -1,7 +1,9 @@
 """Security audit logging service."""
 
-from typing import Optional, Dict, Any
+from typing import Any
+
 from sqlmodel import Session
+
 from models.security_audit import SecurityAudit
 
 
@@ -9,9 +11,9 @@ def log_security_event(
     session: Session,
     event_type: str,
     ip_address: str,
-    user_id: Optional[int] = None,
-    user_agent: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None,
+    user_id: int | None = None,
+    user_agent: str | None = None,
+    details: dict[str, Any] | None = None,
 ) -> SecurityAudit:
     """
     Log a security event.

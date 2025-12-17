@@ -1,49 +1,52 @@
 """Cost optimization API endpoints."""
 
-from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, Request, Query
-from sqlmodel import Session, select, and_
-from pydantic import BaseModel, ConfigDict
+from typing import Any
 
-from core.database import get_session
+import structlog
+from fastapi import APIRouter, Depends, Query, Request
+from pydantic import BaseModel, ConfigDict
+from sqlmodel import Session, and_, select
+
 from api.deps import get_current_user_id
-from services.cost_service import CostService
+from core.database import get_session
 from models.cost_optimization import (
     Budget,
     OptimizationRecommendation,
 )
 from models.telemetry import Telemetry
-import structlog
+from services.cost_service import CostService
 
 logger = structlog.get_logger()
 router = APIRouter()
 
+MIN_ANOMALY_HISTORY_DAYS = 10
+
 
 class BudgetCreate(BaseModel):
     workspace_id: int
-    project_id: Optional[int] = None
+    project_id: int | None = None
     amount: float
     period: str = "monthly"
-    alert_thresholds: Optional[Dict[str, Any]] = None
+    alert_thresholds: dict[str, Any] | None = None
 
 
 class BudgetRead(BaseModel):
     id: int
     workspace_id: int
-    project_id: Optional[int]
+    project_id: int | None
     amount: float
     period: str
-    alert_thresholds: Dict[str, Any]
+    alert_thresholds: dict[str, Any]
     created_at: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class BudgetUpdate(BaseModel):
-    amount: Optional[float] = None
-    period: Optional[str] = None
-    alert_thresholds: Optional[Dict[str, Any]] = None
+    amount: float | None = None
+    period: str | None = None
+    alert_thresholds: dict[str, Any] | None = None
 
 
 def get_cost_service(session: Session = Depends(get_session)) -> CostService:
@@ -51,13 +54,13 @@ def get_cost_service(session: Session = Depends(get_session)) -> CostService:
     return CostService(session=session)
 
 
-@router.get("/budget", response_model=Dict[str, Any])
+@router.get("/budget", response_model=dict[str, Any])
 def get_budget(
     request: Request,
     session: Session = Depends(get_session),
     cost_service: CostService = Depends(get_cost_service),
     user_id: int = Depends(get_current_user_id),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get current budget status."""
     # Get user's budget (for now, get first budget)
     budget = session.exec(select(Budget).limit(1)).first()
@@ -97,7 +100,7 @@ def get_budget(
                       if forecasts else current_spend)
 
     # Group by provider
-    by_provider: Dict[str, float] = {}
+    by_provider: dict[str, float] = {}
     for record in telemetry_records:
         provider = record.sdk or "unknown"
         by_provider[provider] = by_provider.get(
@@ -116,13 +119,13 @@ def get_budget(
     }
 
 
-@router.get("/budgets/", response_model=List[BudgetRead])
-@router.get("/budgets", response_model=List[BudgetRead])
+@router.get("/budgets/", response_model=list[BudgetRead])
+@router.get("/budgets", response_model=list[BudgetRead])
 def list_budgets(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> List[BudgetRead]:
+) -> list[BudgetRead]:
     """List all budgets."""
     budgets = session.exec(select(Budget)).all()
     return [
@@ -178,7 +181,7 @@ def get_cost_forecast(
     cost_service: CostService = Depends(get_cost_service),
     user_id: int = Depends(get_current_user_id),
     days_ahead: int = Query(30, ge=1, le=90),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get cost forecast."""
     # Get historical costs
     end_date = datetime.utcnow()
@@ -217,13 +220,13 @@ def get_cost_forecast(
     }
 
 
-@router.get("/anomalies", response_model=List[Dict[str, Any]])
+@router.get("/anomalies", response_model=list[dict[str, Any]])
 def get_cost_anomalies(
     request: Request,
     session: Session = Depends(get_session),
     cost_service: CostService = Depends(get_cost_service),
     user_id: int = Depends(get_current_user_id),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Get detected cost anomalies."""
     # Get recent costs
     end_date = datetime.utcnow()
@@ -250,7 +253,7 @@ def get_cost_anomalies(
     # Detect anomalies
     anomalies = []
     for i, cost in enumerate(daily_costs):
-        if i >= 10:  # Need at least 10 days of history
+        if i >= MIN_ANOMALY_HISTORY_DAYS:
             anomaly = cost_service.detect_anomalies(daily_costs[:i], cost)
             if anomaly:
                 anomalies.append(
@@ -266,13 +269,13 @@ def get_cost_anomalies(
     return anomalies
 
 
-@router.get("/recommendations", response_model=List[Dict[str, Any]])
+@router.get("/recommendations", response_model=list[dict[str, Any]])
 def get_optimization_recommendations(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
     limit: int = Query(5, ge=1, le=20),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Get optimization recommendations."""
     recommendations = session.exec(
         select(OptimizationRecommendation)
@@ -300,7 +303,7 @@ def get_optimization_recommendations(
 def list_scenarios(
     request: Request,
     user_id: int = Depends(get_current_user_id),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """List cost forecast scenarios."""
     return []
 
@@ -308,9 +311,9 @@ def list_scenarios(
 @router.post("/scenarios")
 def create_scenario(
     request: Request,
-    scenario_data: Dict[str, Any],
+    scenario_data: dict[str, Any],
     user_id: int = Depends(get_current_user_id),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a cost forecast scenario."""
     return {"id": 1, **scenario_data}
 
@@ -320,6 +323,6 @@ def create_scenario(
 def get_forecast_accuracy(
     request: Request,
     user_id: int = Depends(get_current_user_id),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get forecast accuracy metrics."""
     return {"mae": 0.0, "mape": 0.0, "rmse": 0.0, "period": "30d"}

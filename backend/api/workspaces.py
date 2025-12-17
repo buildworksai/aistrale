@@ -1,15 +1,19 @@
 """Workspace management API endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlmodel import Session, select
-from pydantic import BaseModel, ConfigDict
 
-from core.database import get_session
+from datetime import datetime
+
+import structlog
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import delete
+from sqlmodel import Session, select
+
 from api.deps import get_current_user_id, require_admin
+from core.database import get_session
+from models.webhook import Webhook, WebhookDelivery
 from models.workspace import Workspace
 from services.region_service import RegionService
-import structlog
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -17,30 +21,30 @@ router = APIRouter()
 
 class WorkspaceCreate(BaseModel):
     name: str
-    region: Optional[str] = None
+    region: str | None = None
 
 
 class WorkspaceRead(BaseModel):
     id: int
     name: str
     region: str
-    created_at: str
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class WorkspaceUpdate(BaseModel):
-    name: Optional[str] = None
-    region: Optional[str] = None
+    name: str | None = None
+    region: str | None = None
 
 
-@router.get("", response_model=List[WorkspaceRead])
-@router.get("/", response_model=List[WorkspaceRead])
+@router.get("", response_model=list[WorkspaceRead])
+@router.get("/", response_model=list[WorkspaceRead])
 def list_workspaces(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> List[Workspace]:
+) -> list[Workspace]:
     """List all workspaces accessible to the user."""
     # In future, filter by user permissions
     workspaces = session.exec(select(Workspace)).all()
@@ -61,7 +65,7 @@ def create_workspace(
         try:
             region_service.validate_workspace_region(workspace_data.region)
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
     else:
         # Use default region
         region_service = RegionService()
@@ -119,7 +123,7 @@ def update_workspace(
         try:
             region_service.validate_workspace_region(workspace_data.region)
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
         workspace.region = workspace_data.region
 
     if workspace_data.name:
@@ -149,6 +153,16 @@ def delete_workspace(
     workspace = session.get(Workspace, workspace_id)
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
+
+    webhook_ids = session.exec(
+        select(Webhook.id).where(Webhook.workspace_id == workspace_id)
+    ).all()
+    if webhook_ids:
+        session.exec(
+            delete(WebhookDelivery).where(WebhookDelivery.webhook_id.in_(webhook_ids))
+        )
+        session.exec(delete(Webhook).where(Webhook.id.in_(webhook_ids)))
+        session.commit()
 
     session.delete(workspace)
     session.commit()

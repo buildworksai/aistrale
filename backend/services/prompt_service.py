@@ -1,4 +1,5 @@
 from jinja2 import Template
+
 from models.prompt import Prompt
 
 
@@ -18,7 +19,7 @@ def render_prompt(prompt: Prompt, variables: dict) -> str:
     """
     try:
         template = Template(prompt.template)
-        # Check for missing variables? Jinja2 by default returns empty string for missing vars.
+        # Jinja2 defaults to empty strings for missing vars; validate via inputs.
         # We might want strict validation based on prompt.input_variables.
 
         # Simple validation
@@ -33,4 +34,4 @@ def render_prompt(prompt: Prompt, variables: dict) -> str:
 
         return template.render(**variables)
     except Exception as e:
-        raise ValueError(f"Failed to render prompt: {str(e)}")
+        raise ValueError(f"Failed to render prompt: {e!s}") from e

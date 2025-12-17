@@ -1,8 +1,13 @@
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
+
 from models.cost_optimization import Benchmark
 
 logger = logging.getLogger(__name__)
+
+PERCENTILE_MEDIAN = 50
+DIFF_PERCENT_HIGH = 10
+DIFF_PERCENT_LOW = -10
 
 
 class BenchmarkService:
@@ -26,7 +31,7 @@ class BenchmarkService:
 
     def get_benchmark(
         self, metric: str, industry: str = "tech", percentile: int = 50
-    ) -> Optional[Benchmark]:
+    ) -> Benchmark | None:
         """
         Retrieve specific benchmark.
         """
@@ -43,7 +48,7 @@ class BenchmarkService:
 
     def compare_to_industry(
         self, metric: str, user_value: float, industry: str = "tech"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare user value to industry benchmarks.
         Returns context about standing.
@@ -59,16 +64,16 @@ class BenchmarkService:
         closest = min(relevant, key=lambda b: abs(b.value - user_value))
 
         # Simple comparison against median (50th)
-        median = next((b for b in relevant if b.percentile == 50), None)
+        median = next((b for b in relevant if b.percentile == PERCENTILE_MEDIAN), None)
 
         comparison = "avg"
         diff_pct = 0.0
 
         if median:
             diff_pct = ((user_value - median.value) / median.value) * 100
-            if diff_pct > 10:
+            if diff_pct > DIFF_PERCENT_HIGH:
                 comparison = "higher"
-            elif diff_pct < -10:
+            elif diff_pct < DIFF_PERCENT_LOW:
                 comparison = "lower"
             else:
                 comparison = "average"

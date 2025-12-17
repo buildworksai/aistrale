@@ -1,10 +1,12 @@
 """Comprehensive tests for security audit API endpoints."""
 
-import pytest
-from unittest.mock import MagicMock
 from datetime import datetime, timedelta
-from models.security_audit import SecurityAudit
+from unittest.mock import MagicMock
+
+import pytest
+
 from api.deps import require_admin
+from models.security_audit import SecurityAudit
 
 
 class TestSecurityAuditAPI:
@@ -195,8 +197,9 @@ class TestSecurityAuditAPI:
 
     def test_list_audit_events_not_admin(self, client, mock_session):
         """Test listing audit events as non-admin."""
-        from core.database import get_session
         from fastapi import HTTPException
+
+        from core.database import get_session
 
         app = client.app
 

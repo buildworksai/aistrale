@@ -1,11 +1,12 @@
 """Tests for scheduler."""
 
 from unittest.mock import patch
+
 from core.scheduler import (
-    setup_scheduled_jobs,
-    start_scheduler,
-    shutdown_scheduler,
     scheduler,
+    setup_scheduled_jobs,
+    shutdown_scheduler,
+    start_scheduler,
 )
 
 

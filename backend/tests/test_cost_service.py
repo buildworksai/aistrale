@@ -1,5 +1,5 @@
-from services.cost_service import CostService
 from models.cost_optimization import Budget
+from services.cost_service import CostService
 
 
 def test_forecast_costs():

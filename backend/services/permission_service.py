@@ -1,6 +1,9 @@
 import logging
-from typing import Optional
+
+from sqlmodel import Session, select
+
 from models.permission import Permission
+from models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -10,12 +13,15 @@ class PermissionService:
     Service for RBAC and fine-grained permission checks.
     """
 
+    def __init__(self, session: Session):
+        self._session = session
+
     def check_permission(
         self,
         user_id: int,
         action: str,
         resource_type: str,
-        resource_id: Optional[str] = None,
+        resource_id: str | None = None,
     ) -> bool:
         """
         Check if a user has permission to perform an action on a resource.
@@ -28,28 +34,41 @@ class PermissionService:
         # have ID)
 
         logger.debug(
-            f"Checking permission User={user_id} Action={action} Resource={resource_type}:{resource_id}"
+            "Checking permission User=%s Action=%s Resource=%s:%s",
+            user_id,
+            action,
+            resource_type,
+            resource_id,
         )
 
-        # Simulation: For test purposes, let's say user 1 is admin/has all
-        # permissions
-        if user_id == 1:
+        user = self._session.get(User, user_id)
+        if user and user.role == "admin":
             return True
 
-        # Simulation: user 2 can read projects but not write
-        if user_id == 2:
-            if resource_type == "project" and action == "read":
-                return True
+        query = select(Permission).where(
+            Permission.user_id == user_id,
+            Permission.resource_type == resource_type,
+            Permission.action == action,
+            Permission.granted.is_(True),
+        )
+
+        permissions = self._session.exec(query).all()
+        if not permissions:
             return False
 
-        return False
+        if resource_id is None:
+            return any(
+                p.resource_id is None or p.resource_id == "all" for p in permissions
+            )
+
+        return any(p.resource_id in (resource_id, "all") for p in permissions)
 
     def grant_permission(
         self,
         user_id: int,
         action: str,
         resource_type: str,
-        resource_id: Optional[str] = None,
+        resource_id: str | None = None,
     ) -> Permission:
         """
         Grant a permission to a user.
@@ -61,6 +80,8 @@ class PermissionService:
             resource_id=resource_id,
             granted=True,
         )
-        # Would save to DB here
-        logger.info(f"Granted permission: {perm}")
+        self._session.add(perm)
+        self._session.commit()
+        self._session.refresh(perm)
+        logger.info("Granted permission: %s", perm)
         return perm

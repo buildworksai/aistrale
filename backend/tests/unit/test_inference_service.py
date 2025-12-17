@@ -1,5 +1,7 @@
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
+
 from core.exceptions import InferenceError
 from models.telemetry import Telemetry
 from services.inference_service import run_inference

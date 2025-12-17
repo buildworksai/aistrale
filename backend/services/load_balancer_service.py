@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import List, Dict
+
 from models.reliability import LoadBalanceRule
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ class LoadBalancerService:
 
     def __init__(self):
         # Simulation: In-memory counters for round-robin
-        self._counters: Dict[str, int] = {}
+        self._counters: dict[str, int] = {}
 
         # Mock Rule
         self.rules = {
@@ -48,13 +48,13 @@ class LoadBalancerService:
 
         return rule.providers[0]
 
-    def _round_robin(self, key: str, providers: List[str]) -> str:
+    def _round_robin(self, key: str, providers: list[str]) -> str:
         idx = self._counters.get(key, 0)
         provider = providers[idx % len(providers)]
         self._counters[key] = idx + 1
         return provider
 
-    def _weighted(self, providers: List[str], weights: Dict[str, int]) -> str:
+    def _weighted(self, providers: list[str], weights: dict[str, int]) -> str:
         # Create weighted pool (simple list expansion)
         # Optimziation: Use cumulative weights for binary search if pool is
         # huge

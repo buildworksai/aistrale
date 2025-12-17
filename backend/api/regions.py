@@ -1,13 +1,13 @@
 """Data residency region management API endpoints."""
 
-from typing import List
+
+import structlog
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
 from api.deps import get_current_user_id
 from models.region import Region
 from services.region_service import RegionService
-import structlog
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -19,11 +19,11 @@ class RegionInfo(BaseModel):
     is_allowed: bool
 
 
-@router.get("/", response_model=List[RegionInfo])
+@router.get("/", response_model=list[RegionInfo])
 def list_regions(
     request: Request,
     user_id: int = Depends(get_current_user_id),
-) -> List[RegionInfo]:
+) -> list[RegionInfo]:
     """List all available regions and their status."""
     region_service = RegionService()
     allowed_regions = region_service.get_supported_regions()

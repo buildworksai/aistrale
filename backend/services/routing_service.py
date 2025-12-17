@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+
 from models.cost_optimization import ProviderPerformance, RoutingRule
 
 logger = logging.getLogger(__name__)
@@ -58,11 +58,12 @@ class RoutingService:
             ),
         ]
 
-    def route_request(self,
-                      task_type: str,
-                      quality_req: float = 0.0,
-                      latency_req_ms: int = None) -> Dict[str,
-                                                          str]:
+    def route_request(
+        self,
+        task_type: str,
+        quality_req: float = 0.0,
+        latency_req_ms: int | None = None,
+    ) -> dict[str, str]:
         """
         Determines the best provider/model for the given requirements.
         Returns dict with "provider" and "model".

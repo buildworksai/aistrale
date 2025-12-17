@@ -1,8 +1,12 @@
 import logging
-from typing import List, Dict, Any
+from typing import Any
+
 from models.cost_optimization import OptimizationRecommendation
 
 logger = logging.getLogger(__name__)
+
+POLITE_FILLER_THRESHOLD = 2
+LONG_PROMPT_THRESHOLD_CHARS = 1000
 
 
 class OptimizationService:
@@ -10,7 +14,7 @@ class OptimizationService:
     Service to provide automatic cost optimization recommendations.
     """
 
-    def analyze_prompt(self, prompt: str) -> Dict[str, Any]:
+    def analyze_prompt(self, prompt: str) -> dict[str, Any]:
         """
         Analyze prompt for potential token reductions.
         """
@@ -24,15 +28,16 @@ class OptimizationService:
             "would you",
             "thank you"]
         count = sum(1 for p in polite_fillers if p in prompt.lower())
-        if count > 2:
+        if count > POLITE_FILLER_THRESHOLD:
             suggestions.append(
                 "Remove polite fillers to save tokens (e.g. 'please', 'could you')."
             )
 
         # 2. Check for verbose instructions
-        if len(prompt) > 1000:
+        if len(prompt) > LONG_PROMPT_THRESHOLD_CHARS:
             suggestions.append(
-                "Prompt is very long (>1000 chars). Consider summarizing context or using RAG."
+                "Prompt is very long (>1000 chars). Consider summarizing context "
+                "or using RAG."
             )
 
         efficiency_score = 1.0 - (len(suggestions) * 0.1)
@@ -45,7 +50,7 @@ class OptimizationService:
 
     def generate_recommendations(
         self, workspace_id: int
-    ) -> List[OptimizationRecommendation]:
+    ) -> list[OptimizationRecommendation]:
         """
         Generate list of recommendations for a workspace.
         """

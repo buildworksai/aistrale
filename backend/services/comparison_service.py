@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +11,10 @@ class ComparisonService:
 
     def compare_providers(
         self, provider1: str, provider2: str, metric: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
-        Compare two providers on a specific metric (e.g., 'avg_latency_ms', 'cost_per_1k').
+        Compare two providers on a specific metric (e.g., 'avg_latency_ms',
+        'cost_per_1k').
         """
         # Simulation: In real app, query historical data
         # Here we mock some data
@@ -55,7 +56,7 @@ class ComparisonService:
         }
 
     def generate_ranking(
-            self, metric: str = "quality") -> List[Dict[str, Any]]:
+            self, metric: str = "quality") -> list[dict[str, Any]]:
         """
         Rank all providers by a metric.
         """

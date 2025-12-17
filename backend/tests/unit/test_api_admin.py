@@ -38,8 +38,9 @@ class TestAdminAPI:
 
     def test_rotate_encryption_key_non_admin(self, client):
         """Test key rotation as non-admin should fail."""
-        from api import admin
         from fastapi import HTTPException
+
+        from api import admin
 
         app = client.app
 

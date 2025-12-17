@@ -1,9 +1,11 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from fastapi import Request, Response
+
+from core.region_middleware import RegionMiddleware
 from models.region import Region
 from services.region_service import RegionService
-from core.region_middleware import RegionMiddleware
 
 
 @pytest.fixture

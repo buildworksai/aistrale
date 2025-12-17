@@ -1,11 +1,15 @@
-from fastapi import HTTPException, Request, Depends
+import os
+import sys
+from typing import Any
+
+from fastapi import Depends, HTTPException, Request
 from sqlmodel import Session
-from models.user import User
+
 from core.database import get_session
-from typing import Dict, Any
+from models.user import User
 
 
-def get_session_data(request: Request) -> Dict[str, Any]:
+def get_session_data(request: Request) -> dict[str, Any]:
     """
     Extract session data from request.
     
@@ -19,11 +23,10 @@ def get_session_data(request: Request) -> Dict[str, Any]:
     if hasattr(request, 'session'):
         return request.session
     
-    # In testing mode, check if dependency override is set
-    # This is a fallback for cases where override isn't applied correctly
-    import os
+    # In testing mode, check if dependency override is set.
+    # This is a fallback for cases where override isn't applied correctly.
     if os.getenv("TESTING", "false").lower() == "true":
-        from main import app
+        app = request.app
         if get_session_data in app.dependency_overrides:
             try:
                 override_func = app.dependency_overrides[get_session_data]
@@ -34,8 +37,10 @@ def get_session_data(request: Request) -> Dict[str, Any]:
             except Exception as e:
                 # If override fails, log and return empty dict in test mode
                 # This allows tests to work even if override isn't perfect
-                import sys
-                print(f"get_session_data override failed: {type(e).__name__}: {e}", file=sys.stderr)
+                print(
+                    f"get_session_data override failed: {type(e).__name__}: {e}",
+                    file=sys.stderr,
+                )
                 return {}
     
     # In production, raise error if session is not available
@@ -43,7 +48,7 @@ def get_session_data(request: Request) -> Dict[str, Any]:
 
 
 def get_current_user_id(
-    session_data: Dict[str, Any] = Depends(get_session_data)
+    session_data: dict[str, Any] = Depends(get_session_data)
 ) -> int:
     """Get current user ID from session."""
     user_id = session_data.get("user_id")
@@ -53,7 +58,7 @@ def get_current_user_id(
 
 
 def require_admin(
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
     session: Session = Depends(get_session),
 ) -> int:
     """Require admin role."""

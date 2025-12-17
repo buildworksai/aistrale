@@ -1,14 +1,15 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, select
-from typing import Dict, Any
 
+from api.deps import get_session_data
 from core.database import get_session
 from core.limiter import limit
 from core.security import verify_password
 from models.user import User
 from services.security_audit_service import log_security_event
-from api.deps import get_session_data
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ def login(
     request: Request,
     login_data: LoginRequest,
     session: Session = Depends(get_session),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ) -> dict:
     user = session.exec(
         select(User).where(
@@ -71,7 +72,7 @@ def login(
 def logout(
     request: Request,
     session: Session = Depends(get_session),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ) -> dict:
     user_id = session_data.get("user_id")
     ip_address = request.client.host if request.client else "unknown"
@@ -94,7 +95,7 @@ def logout(
 def get_current_user(
     request: Request,
     session: Session = Depends(get_session),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ):
     user_id = session_data.get("user_id")
     if not user_id:

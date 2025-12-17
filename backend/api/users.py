@@ -1,12 +1,13 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from api.deps import get_session_data
 from core.database import get_session
 from core.security import get_password_hash
 from models.user import User
-from api.deps import get_session_data
-from typing import Dict, Any
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ def create_user(
     user_data: UserCreate,
     request: Request,
     session: Session = Depends(get_session),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ) -> User:
     # Only admin can create users
     current_role = session_data.get("role")
@@ -50,7 +51,7 @@ def create_user(
 def read_users(
     request: Request,
     session: Session = Depends(get_session),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ) -> list[User]:
     current_role = session_data.get("role")
     if current_role != "admin":

@@ -1,5 +1,5 @@
-from services.quality_service import QualityScoringService
 from models.cost_optimization import ProviderPerformance
+from services.quality_service import QualityScoringService
 
 
 def test_calculate_quality_score():

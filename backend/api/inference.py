@@ -1,29 +1,28 @@
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, desc, select
 
+from api.deps import get_current_user_id
 from core.database import get_session
 from core.limiter import limit
 from models.chat import ChatMessage
 from models.token import Token
 from services.inference_service import run_inference
 from services.security_audit_service import log_security_event
-from api.deps import get_current_user_id
 
 router = APIRouter()
 
 
 class InferenceRequest(BaseModel):
     provider: str
-    model: Optional[str] = None
+    model: str | None = None
     input_text: str
     token_id: int  # Changed from token_value to token_id
-    hf_provider: Optional[str] = "auto"
-    task: Optional[str] = "auto"
-    prompt_id: Optional[int] = None
-    prompt_variables: Optional[dict] = None
+    hf_provider: str | None = "auto"
+    task: str | None = "auto"
+    prompt_id: int | None = None
+    prompt_variables: dict | None = None
 
 
 @router.post("/run")

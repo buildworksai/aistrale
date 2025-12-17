@@ -1,6 +1,7 @@
 """Tests for pricing service."""
 
 import pytest
+
 from services.pricing_service import PricingService
 
 

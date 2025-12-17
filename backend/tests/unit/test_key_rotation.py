@@ -1,12 +1,13 @@
 """Tests for key rotation service."""
 
 import pytest
-from sqlmodel import Session, create_engine, SQLModel
 from cryptography.fernet import Fernet
+from sqlmodel import Session, SQLModel, create_engine
+
+from core.config import get_settings
 from models.encryption_key import EncryptionKey
 from models.token import Token
 from services.key_rotation_service import KeyRotationService
-from core.config import get_settings
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
-import os
 import logging
-from typing import Optional
+import os
+
 from cryptography.fernet import Fernet
 
 logger = logging.getLogger(__name__)
@@ -8,10 +8,11 @@ logger = logging.getLogger(__name__)
 
 class FieldEncryptionService:
     """
-    Service for encrypting and decrypting sensitive field data using Fernet (symmetric encryption).
+    Service for encrypting and decrypting sensitive field data using Fernet
+    (symmetric encryption).
     """
 
-    def __init__(self, key: Optional[str] = None):
+    def __init__(self, key: str | None = None):
         """
         Initialize with a base64-encoded 32-byte key.
         If no key provided, it looks for ENCRYPTION_KEY env var.
@@ -20,7 +21,8 @@ class FieldEncryptionService:
 
         if not self._key:
             logger.warning(
-                "No ENCRYPTION_KEY provided. Generating a temporary key for this session. DATA WILL BE UNREADABLE AFTER RESTART."
+                "No ENCRYPTION_KEY provided. Generating a temporary key for this "
+                "session. DATA WILL BE UNREADABLE AFTER RESTART."
             )
             self._key = Fernet.generate_key().decode()
 

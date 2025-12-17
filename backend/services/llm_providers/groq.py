@@ -1,10 +1,9 @@
 """Groq provider implementation."""
 
-from typing import Optional, Dict
 
 from groq import AsyncGroq
 
-from services.llm_providers.base import LLMProvider, InferenceResult
+from services.llm_providers.base import InferenceResult, LLMProvider
 
 
 class GroqProvider(LLMProvider):
@@ -25,7 +24,7 @@ class GroqProvider(LLMProvider):
             self,
             model: str,
             input_text: str,
-            history: Optional[list] = None,
+            history: list | None = None,
             **kwargs) -> InferenceResult:
         """Run Groq inference."""
         history = history or []
@@ -74,7 +73,7 @@ class GroqProvider(LLMProvider):
             output_tokens=output_tokens,
         )
 
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """Get Groq pricing per 1M tokens."""
         # Pricing per 1M tokens
         pricing = {

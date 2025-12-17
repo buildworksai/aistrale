@@ -1,13 +1,15 @@
 """Tests for LLM provider implementations."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from services.llm_providers.factory import get_provider
-from services.llm_providers.openai import OpenAIProvider
+
+import pytest
+
 from services.llm_providers.anthropic import AnthropicProvider
+from services.llm_providers.factory import get_provider
 from services.llm_providers.gemini import GeminiProvider
 from services.llm_providers.groq import GroqProvider
 from services.llm_providers.huggingface import HuggingFaceProvider
+from services.llm_providers.openai import OpenAIProvider
 
 
 class TestProviderFactory:

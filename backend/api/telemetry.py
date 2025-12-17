@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from sqlmodel import Session, select, and_
+from fastapi import APIRouter, Depends, Query, Request
+from sqlmodel import Session, and_, select
 
+from api.deps import get_current_user_id, get_session_data
 from core.database import get_session
 from models.telemetry import Telemetry
-from api.deps import get_current_user_id, get_session_data
-from typing import Dict, Any
 
 router = APIRouter()
 
@@ -17,7 +16,7 @@ def read_telemetry(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-    session_data: Dict[str, Any] = Depends(get_session_data),
+    session_data: dict[str, Any] = Depends(get_session_data),
 ) -> list[Telemetry]:
     if session_data.get("role") == "admin":
         return session.exec(select(Telemetry)).all()
@@ -32,11 +31,11 @@ def get_cost_analytics(
     request: Request,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-    provider: Optional[str] = Query(None),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    provider: str | None = Query(None),
+    start_date: datetime | None = Query(None),
+    end_date: datetime | None = Query(None),
     group_by: str = Query("day", pattern="^(day|week|month|provider|model)$"),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get cost analytics aggregated by time period, provider, or model.
 
@@ -70,7 +69,7 @@ def get_cost_analytics(
     total_cost = sum(record.cost or 0.0 for record in telemetry_records)
 
     # Group by provider
-    by_provider: Dict[str, float] = {}
+    by_provider: dict[str, float] = {}
     for record in telemetry_records:
         provider_name = record.sdk or "unknown"
         by_provider[provider_name] = by_provider.get(provider_name, 0.0) + (
@@ -78,14 +77,14 @@ def get_cost_analytics(
         )
 
     # Group by model
-    by_model: Dict[str, float] = {}
+    by_model: dict[str, float] = {}
     for record in telemetry_records:
         model_name = record.model or "unknown"
         by_model[model_name] = by_model.get(
             model_name, 0.0) + (record.cost or 0.0)
 
     # Group by time period
-    by_time: Dict[str, float] = {}
+    by_time: dict[str, float] = {}
     for record in telemetry_records:
         if group_by == "day":
             time_key = record.timestamp.strftime("%Y-%m-%d")

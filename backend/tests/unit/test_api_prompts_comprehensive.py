@@ -1,9 +1,11 @@
 """Comprehensive tests for prompts API endpoints."""
 
-import pytest
 from unittest.mock import MagicMock
-from models.prompt import Prompt
+
+import pytest
+
 from api.deps import get_current_user_id
+from models.prompt import Prompt
 
 
 class TestPromptsAPI:

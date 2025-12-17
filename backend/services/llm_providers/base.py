@@ -1,15 +1,15 @@
 """Base provider interface for LLM providers."""
 
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any, TypedDict
+from typing import Any, TypedDict
 
 
 class InferenceResult(TypedDict, total=False):
     """Result from LLM inference."""
 
     output: Any  # Can be str, dict (for binary data), etc.
-    input_tokens: Optional[int]
-    output_tokens: Optional[int]
+    input_tokens: int | None
+    output_tokens: int | None
 
 
 class LLMProvider(ABC):
@@ -20,7 +20,7 @@ class LLMProvider(ABC):
             self,
             model: str,
             input_text: str,
-            history: Optional[list] = None,
+            history: list | None = None,
             **kwargs) -> InferenceResult:
         """
         Run inference and return result with token usage.
@@ -36,7 +36,7 @@ class LLMProvider(ABC):
         """
 
     @abstractmethod
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """
         Get pricing per 1M tokens (input, output).
 

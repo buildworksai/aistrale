@@ -1,10 +1,9 @@
 """Anthropic provider implementation."""
 
-from typing import Optional, Dict
 
 from anthropic import AsyncAnthropic
 
-from services.llm_providers.base import LLMProvider, InferenceResult
+from services.llm_providers.base import InferenceResult, LLMProvider
 
 
 class AnthropicProvider(LLMProvider):
@@ -25,7 +24,7 @@ class AnthropicProvider(LLMProvider):
             self,
             model: str,
             input_text: str,
-            history: Optional[list] = None,
+            history: list | None = None,
             **kwargs) -> InferenceResult:
         """Run Anthropic inference."""
         history = history or []
@@ -59,7 +58,7 @@ class AnthropicProvider(LLMProvider):
             output_tokens=output_tokens,
         )
 
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """Get Anthropic pricing per 1M tokens."""
         # Pricing per 1M tokens
         pricing = {

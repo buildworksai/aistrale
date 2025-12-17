@@ -15,7 +15,7 @@ os.environ["TESTING"] = "true"
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
 # Clear settings cache to ensure TESTING=True is picked up
-from core.config import clear_settings_cache  # noqa: E402
+from core.config import clear_settings_cache
 
 clear_settings_cache()
 
@@ -41,11 +41,11 @@ with patch("core.limiter.limiter", mock_limiter_global):
     sys.modules["starsessions.stores.redis"] = MagicMock()
     sys.modules["starsessions.stores.redis"].RedisStore = mock_redis_store_cls
 
-from fastapi.testclient import TestClient  # noqa: E402
 from fastapi import Request  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
-from core.database import get_session  # noqa: E402
 from api.deps import get_session_data  # noqa: E402
+from core.database import get_session  # noqa: E402
 from main import app  # noqa: E402
 
 # Initialize view_rate_limit for slowapi before any tests run
@@ -66,7 +66,7 @@ tests_pkg = sys.modules.get("tests")
 if tests_pkg is None:
     tests_pkg = types.ModuleType("tests")
     sys.modules["tests"] = tests_pkg
-setattr(tests_pkg, "conftest", sys.modules[__name__])
+tests_pkg.conftest = sys.modules[__name__]
 sys.modules["tests.conftest"] = sys.modules[__name__]
 
 
@@ -122,8 +122,8 @@ def client(mock_session):
     # wrapped the function. We need to ensure the limiter is patched BEFORE the
     # decorator is applied, or we need to unwrap the functions.
     import api.auth
-    import api.tokens
     import api.inference
+    import api.tokens
     
     # Store original limiters
     original_auth_limiter = getattr(api.auth, "limiter", None)
@@ -226,8 +226,8 @@ def client(mock_session):
 def authenticated_client(client, mock_session):
     """Client with authenticated session."""
     # Login first to set session
-    from models.user import User
     from core.security import get_password_hash
+    from models.user import User
 
     user = User(
         id=1,
@@ -259,8 +259,8 @@ def authenticated_client(client, mock_session):
 @pytest.fixture
 def admin_client(client, mock_session):
     """Client with admin session."""
-    from models.user import User
     from core.security import get_password_hash
+    from models.user import User
 
     admin = User(
         id=1,

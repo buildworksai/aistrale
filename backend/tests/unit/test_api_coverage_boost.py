@@ -1,16 +1,18 @@
 """Targeted tests to boost API coverage to >90%."""
 
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from models.user import User
-from models.token import Token
-from models.telemetry import Telemetry
+from cryptography.fernet import Fernet
+
+from core.config import get_settings
+from models.chat import ChatMessage
 from models.prompt import Prompt
 from models.security_audit import SecurityAudit
-from models.chat import ChatMessage
-from cryptography.fernet import Fernet
-from core.config import get_settings
-from datetime import datetime, timedelta
+from models.telemetry import Telemetry
+from models.token import Token
+from models.user import User
 
 
 class TestPromptsCoverage:

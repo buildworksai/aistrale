@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 try:
     from presidio_analyzer import AnalyzerEngine, RecognizerResult
@@ -20,13 +20,14 @@ logger = logging.getLogger(__name__)
 
 class PIIDetectionService:
     """
-    Service for detecting and handling Personally Identifiable Information (PII) in text.
+    Service for detecting and handling Personally Identifiable Information (PII) in
+    text.
     Uses Microsoft Presidio for detection.
     Falls back to basic pattern matching if Presidio is not available.
     """
 
-    def __init__(self, languages: List[str] = ["en"]):
-        self.languages = languages
+    def __init__(self, languages: list[str] | None = None):
+        self.languages = languages or ["en"]
         self.analyzer = None
         self.anonymizer = None
 
@@ -45,16 +46,19 @@ class PIIDetectionService:
                 logger.info("PIIDetectionService initialized with Presidio")
             except Exception as e:
                 logger.warning(
-                    f"Presidio initialization failed: {e}. Using basic pattern matching."
+                    "Presidio initialization failed: %s. Using basic pattern matching.",
+                    e,
                 )
                 self.analyzer = None
                 self.anonymizer = None
         except Exception as e:
             logger.warning(
-                f"Failed to initialize PIIDetectionService with Presidio: {e}. Using basic pattern matching."
+                "Failed to initialize PIIDetectionService with Presidio: %s. "
+                "Using basic pattern matching.",
+                e,
             )
 
-    def analyze(self, text: str) -> List:
+    def analyze(self, text: str) -> list:
         """
         Analyze text to find PII entities.
         Falls back to basic pattern matching if Presidio is not available.
@@ -74,7 +78,7 @@ class PIIDetectionService:
             logger.error(f"Error analyzing text for PII: {e}")
             return self._basic_pii_detection(text)
 
-    def _basic_pii_detection(self, text: str) -> List:
+    def _basic_pii_detection(self, text: str) -> list:
         """Basic PII detection using regex patterns."""
         patterns = {
             "EMAIL": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
@@ -99,7 +103,7 @@ class PIIDetectionService:
         return results
 
     def anonymize(self, text: str,
-                  operators: Optional[Dict[str, Any]] = None) -> str:
+                  operators: dict[str, Any] | None = None) -> str:
         """
         Anonymize PII in text using detected entities.
         Default behavior is to replace with <ENTITY_TYPE>.

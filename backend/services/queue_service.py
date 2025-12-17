@@ -1,6 +1,7 @@
 import logging
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any
+
 from models.reliability import RequestQueue
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ class QueueService:
         self._db_mirror = {}  # Dictionary simulation of DB for ID lookup
 
     async def enqueue(
-        self, request_data: Dict[str, Any], priority: int = 1
+        self, request_data: dict[str, Any], priority: int = 1
     ) -> RequestQueue:
         """
         Add a request to the queue.
@@ -41,7 +42,7 @@ class QueueService:
         logger.info(f"Enqueued request {record.id} with priority {priority}")
         return record
 
-    async def dequeue(self) -> Optional[RequestQueue]:
+    async def dequeue(self) -> RequestQueue | None:
         """
         Get next request to process.
         """
@@ -66,13 +67,13 @@ class QueueService:
     def get_queue_depth(self) -> int:
         return len(self._queue)
 
-    def list_items(self) -> List[RequestQueue]:
+    def list_items(self) -> list[RequestQueue]:
         """
         List all queue items.
         """
         return list(self._db_mirror.values())
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get queue metrics.
         """

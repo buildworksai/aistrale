@@ -1,7 +1,8 @@
 """Tests for security audit service."""
 
 import pytest
-from sqlmodel import Session, create_engine, SQLModel
+from sqlmodel import Session, SQLModel, create_engine
+
 from services.security_audit_service import log_security_event
 
 

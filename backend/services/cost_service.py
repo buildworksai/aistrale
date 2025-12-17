@@ -1,11 +1,17 @@
 import logging
 import statistics
 from datetime import date, timedelta
-from typing import List, Optional
+
 from sqlmodel import Session
-from models.cost_optimization import Budget, CostForecast, CostAnomaly
+
+from models.cost_optimization import Budget, CostAnomaly, CostForecast
 
 logger = logging.getLogger(__name__)
+
+MIN_FORECAST_DAYS = 5
+MIN_ANOMALY_SAMPLE_SIZE = 10
+Z_SCORE_CRITICAL = 3.0
+Z_SCORE_WARNING = 2.0
 
 
 class CostService:
@@ -13,16 +19,16 @@ class CostService:
     Service for cost forecasting, budget tracking, and anomaly detection.
     """
 
-    def __init__(self, session: Optional[Session] = None):
+    def __init__(self, session: Session | None = None):
         self.session = session
 
     def forecast_costs(
-        self, daily_costs: List[float], days_ahead: int = 30
-    ) -> List[CostForecast]:
+        self, daily_costs: list[float], days_ahead: int = 30
+    ) -> list[CostForecast]:
         """
         Predict future costs using simple moving average and linear trend.
         """
-        if len(daily_costs) < 5:
+        if len(daily_costs) < MIN_FORECAST_DAYS:
             logger.warning("Not enough data for accurate forecast.")
             return []
 
@@ -46,7 +52,7 @@ class CostService:
             )
         return forecasts
 
-    def check_budget(self, budget: Budget, current_spend: float) -> List[str]:
+    def check_budget(self, budget: Budget, current_spend: float) -> list[str]:
         """
         Check if spend exceeds budget thresholds.
         Returns list of alert messages.
@@ -61,18 +67,19 @@ class CostService:
         for level, threshold_val in thresholds.items():
             if percent_used >= float(threshold_val):
                 alerts.append(
-                    f"Budget alert: {level.upper()} - Used {percent_used:.1f}% of budget ${budget.amount}"
+                    f"Budget alert: {level.upper()} - Used {percent_used:.1f}% "
+                    f"of budget ${budget.amount}"
                 )
 
         return alerts
 
     def detect_anomalies(
-        self, daily_costs: List[float], current_cost: float
-    ) -> Optional[CostAnomaly]:
+        self, daily_costs: list[float], current_cost: float
+    ) -> CostAnomaly | None:
         """
         Detect if current cost is anomalous using Z-score.
         """
-        if len(daily_costs) < 10:
+        if len(daily_costs) < MIN_ANOMALY_SAMPLE_SIZE:
             return None
 
         mean = statistics.mean(daily_costs)
@@ -91,7 +98,7 @@ class CostService:
 
         z_score = (current_cost - mean) / stdev
 
-        if z_score > 3:  # 3 Sigma rule
+        if z_score > Z_SCORE_CRITICAL:
             return CostAnomaly(
                 workspace_id=1,
                 anomaly_type="spike",
@@ -99,7 +106,7 @@ class CostService:
                 cost_delta=current_cost - mean,
                 root_cause="Usage spike > 3 sigma",
             )
-        elif z_score > 2:
+        elif z_score > Z_SCORE_WARNING:
             return CostAnomaly(
                 workspace_id=1,
                 anomaly_type="spike",

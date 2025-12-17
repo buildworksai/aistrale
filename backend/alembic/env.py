@@ -1,4 +1,3 @@
-from core.config import get_settings
 import os
 import sys
 from logging.config import fileConfig
@@ -7,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from alembic import context
+from core.config import get_settings
 
 # Add backend directory to sys.path
 sys.path.append(os.getcwd())

@@ -1,16 +1,19 @@
 import csv
 import json
-from typing import List, Dict
+
 from sqlmodel import Session, select
+
 from models.evaluation import Evaluation, EvaluationResult
 from models.prompt import Prompt
+from models.token import Token
+from services import inference_service
 
 
 class EvaluationService:
     def __init__(self, session: Session):
         self.session = session
 
-    def load_dataset(self, file_path: str) -> List[Dict[str, str]]:
+    def load_dataset(self, file_path: str) -> list[dict[str, str]]:
         """
         Load dataset from a JSON or CSV file.
         Expected format: List of dicts with 'input' and 'expected' keys.
@@ -18,7 +21,7 @@ class EvaluationService:
         dataset = []
         try:
             if file_path.endswith(".json"):
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     data = json.load(f)
                     if isinstance(data, list):
                         dataset = data
@@ -26,7 +29,7 @@ class EvaluationService:
                         raise ValueError(
                             "JSON dataset must be a list of objects")
             elif file_path.endswith(".csv"):
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     reader = csv.DictReader(f)
                     dataset = list(reader)
             else:
@@ -41,7 +44,7 @@ class EvaluationService:
 
             return dataset
         except Exception as e:
-            raise ValueError(f"Failed to load dataset: {str(e)}")
+            raise ValueError(f"Failed to load dataset: {e!s}") from e
 
     async def run_evaluation(self, evaluation_id: int):
         evaluation = self.session.get(Evaluation, evaluation_id)
@@ -70,8 +73,6 @@ class EvaluationService:
 
             # Get user token
             # Try to find default token first
-            from models.token import Token
-
             token = self.session.exec(
                 select(Token).where(
                     Token.user_id == evaluation.user_id, Token.is_default
@@ -87,9 +88,6 @@ class EvaluationService:
             if not token:
                 raise ValueError("No API token found for user")
 
-            # Import run_inference here to avoid circular imports if any
-            from services.inference_service import run_inference
-
             results = []
             for item in dataset:
                 # Run inference
@@ -99,7 +97,7 @@ class EvaluationService:
                 # Use token.token_value (which decrypts it)
                 token_val = token.token_value
 
-                output = await run_inference(
+                output = await inference_service.run_inference(
                     session=self.session,
                     user_id=evaluation.user_id,
                     provider=token.provider,
@@ -107,7 +105,8 @@ class EvaluationService:
                     input_text=item["input"],
                     token_value=token_val,
                     prompt_id=prompt.id,
-                    # We might need to handle prompt variables if the prompt expects more than just 'input'
+                    # Prompt variables support can be added when prompts require more
+                    # than just 'input'.
                     # For now assuming 'input' maps to the main input
                 )
 
@@ -135,8 +134,8 @@ class EvaluationService:
             self.session.add(evaluation)
             self.session.commit()
 
-        except Exception as e:
+        except Exception:
             evaluation.status = "failed"
             self.session.add(evaluation)
             self.session.commit()
-            raise e
+            raise

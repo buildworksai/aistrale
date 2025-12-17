@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
-from core.database import get_session
 from api.deps import require_admin
-from services.key_rotation_service import KeyRotationService
+from core.database import get_session
 from models.encryption_key import EncryptionKey
+from services.key_rotation_service import KeyRotationService
 
 router = APIRouter()
 
@@ -38,8 +38,10 @@ def rotate_encryption_key(
             "re_encrypted_tokens": re_encrypted_count,
         }
     except Exception as e:
-        raise HTTPException(status_code=500,
-                            detail=f"Key rotation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Key rotation failed: {e!s}",
+        ) from e
 
 
 @router.get("/active-key")

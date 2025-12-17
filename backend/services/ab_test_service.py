@@ -1,7 +1,8 @@
 import logging
 import random
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
+
 from models.multi_provider import ABTest, ABTestResult
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ class ABTestService:
             self,
             name: str,
             prompt: str,
-            providers: List[str]) -> ABTest:
+            providers: list[str]) -> ABTest:
         """
         Create and start a new A/B test.
         In reality, this would likely queue a background job.
@@ -30,12 +31,12 @@ class ABTestService:
         # Save to DB (mock)
         test.id = random.randint(1, 1000)
 
-        results = await self._run_test_execution(test)
+        await self._run_test_execution(test)
         test.status = "completed"
 
         return test
 
-    async def _run_test_execution(self, test: ABTest) -> List[ABTestResult]:
+    async def _run_test_execution(self, test: ABTest) -> list[ABTestResult]:
         """
         Execute the prompt against all configured providers.
         """
@@ -54,14 +55,14 @@ class ABTestService:
             results.append(result)
         return results
 
-    def list_tests(self) -> List[ABTest]:
+    def list_tests(self) -> list[ABTest]:
         """
         List all A/B tests.
         """
         # Mock: Return empty list or sample tests
         return []
 
-    def get_results(self, test_id: int) -> Dict[str, Any]:
+    def get_results(self, test_id: int) -> dict[str, Any]:
         """
         Analyze results of a completed test.
         """

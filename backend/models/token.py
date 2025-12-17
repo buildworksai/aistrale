@@ -1,8 +1,7 @@
 from datetime import datetime
-from typing import Optional
 
-from sqlmodel import Field, SQLModel, select
 from cryptography.fernet import Fernet
+from sqlmodel import Field, SQLModel, select
 
 from core.config import get_settings
 from models.encryption_key import EncryptionKey
@@ -25,8 +24,8 @@ def get_active_encryption_key(session=None) -> tuple[str, str]:
         try:
             active_key = session.exec(
                 select(EncryptionKey).where(
-                    EncryptionKey.is_active == True
-                )  # noqa: E712
+                    EncryptionKey.is_active.is_(True)
+                )
             ).first()
 
             if active_key:
@@ -51,7 +50,7 @@ def get_active_encryption_key(session=None) -> tuple[str, str]:
 
 
 class Token(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     provider: str  # "huggingface", "openai", "groq", "anthropic", "gemini"
     encrypted_token: str
@@ -72,7 +71,7 @@ class Token(SQLModel, table=True):
         key_id, key_value = get_active_encryption_key(session)
 
         # If key_id doesn't match, try to find the correct key
-        if self.key_id != key_id and self.key_id != "legacy":
+        if self.key_id not in (key_id, "legacy"):
             # Look up the key by key_id
             key_record = session.exec(
                 select(EncryptionKey).where(

@@ -75,6 +75,6 @@ Build a full-stack application to manage Hugging Face tokens and perform model i
 
 ### Manual Verification
 1. **Setup**: Run `docker-compose up --build`.
-2. **Auth**: Login as `admin@buildworks.ai` / `admin@134`. Verify session creation in Redis.
+2. **Auth**: Login as your seeded admin user. Verify session creation in Redis.
 3. **Tokens**: Add a valid HF token.
 5. **RBAC**: Create a standard user, verify they cannot access Admin User Management.

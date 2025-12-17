@@ -528,7 +528,7 @@ def test_complete_inference_workflow(page: Page):
     # 1. Login
     page.goto("http://localhost:16500/login")
     page.fill('input[name="email"]', "admin@buildworks.ai")
-    page.fill('input[name="password"]', "admin@134")
+    page.fill('input[name="password"]', "<admin-password>")
     page.click('button[type="submit"]')
     
     # 2. Add token

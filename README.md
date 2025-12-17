@@ -180,9 +180,7 @@ This starts:
 
 ### 3. Access Application
 1. Open http://localhost:16500
-2. Login with default credentials:
-   - **Email**: `admin@buildworks.ai`
-   - **Password**: `admin@134`
+2. Login with an admin account that you seed via environment variables (see Backend env vars).
 
 ### 4. Add Your First Token
 1. Navigate to **API Keys Tokens**

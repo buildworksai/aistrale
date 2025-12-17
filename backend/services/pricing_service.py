@@ -1,6 +1,6 @@
 """Pricing service for calculating LLM costs."""
 
-from typing import Dict, Optional
+
 from services.llm_providers.factory import get_provider
 
 
@@ -8,7 +8,7 @@ class PricingService:
     """Service for calculating LLM inference costs."""
 
     @staticmethod
-    def get_pricing(provider: str, model: str) -> Dict[str, float]:
+    def get_pricing(provider: str, model: str) -> dict[str, float]:
         """
         Get pricing per 1M tokens for a provider/model.
 
@@ -32,8 +32,8 @@ class PricingService:
     def calculate_cost(
         provider: str,
         model: str,
-        input_tokens: Optional[int],
-        output_tokens: Optional[int],
+        input_tokens: int | None,
+        output_tokens: int | None,
     ) -> float:
         """
         Calculate cost in USD.

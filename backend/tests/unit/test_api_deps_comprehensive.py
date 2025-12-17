@@ -1,8 +1,9 @@
 """Comprehensive tests for API dependencies."""
 
 import pytest
-from models.user import User
+
 from api.deps import get_current_user_id, require_admin
+from models.user import User
 
 
 class TestAPIDeps:

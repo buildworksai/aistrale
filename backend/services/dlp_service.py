@@ -2,10 +2,10 @@
 
 import logging
 import re
-from typing import List, Tuple, Optional
+
 from sqlmodel import Session, select
 
-from models.dlp_rule import DLPRule, DLPAction
+from models.dlp_rule import DLPAction, DLPRule
 from services.pii_detection_service import PIIDetectionService
 
 logger = logging.getLogger(__name__)
@@ -18,12 +18,12 @@ class DLPService:
     """
 
     def __init__(self, pii_service: PIIDetectionService,
-                 session: Optional[Session] = None):
+                 session: Session | None = None):
         self.pii_service = pii_service
         self.session = session
-        self._rules_cache: Optional[List[DLPRule]] = None
+        self._rules_cache: list[DLPRule] | None = None
 
-    def _load_rules(self) -> List[DLPRule]:
+    def _load_rules(self) -> list[DLPRule]:
         """Load DLP rules from database or use defaults."""
         if self._rules_cache is not None:
             return self._rules_cache
@@ -61,7 +61,7 @@ class DLPService:
         """Invalidate the rules cache."""
         self._rules_cache = None
 
-    def scan_content(self, text: str) -> Tuple[bool, str, List[str]]:
+    def scan_content(self, text: str) -> tuple[bool, str, list[str]]:
         """
         Scans content for violations.
         Returns: (is_blocked, processed_text, violation_messages)
@@ -80,9 +80,6 @@ class DLPService:
         for rule in sorted_rules:
             if not rule.is_active:
                 continue
-
-            matches = re.finditer(rule.pattern, processed_text)
-            found = False
 
             # Simple check if any match exists to flag action
             # For redaction, we need to substitute.
@@ -105,7 +102,8 @@ class DLPService:
                     violations.append(f"Warning by rule: {rule.name}")
 
         # 2. Check PII (using existing service)
-        # PII usually means redact or warn, rarely block entire request unless configured.
+        # PII usually means redact or warn, rarely block entire request unless
+        # configured.
         # We will assume configured to REDACT PII for DLP purposes here.
         processed_text = self.pii_service.redact(processed_text)
 

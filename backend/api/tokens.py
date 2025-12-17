@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
+from api.deps import get_current_user_id
 from core.database import get_session
 from core.limiter import limit
-from api.deps import get_current_user_id
 from models.token import Token, TokenCreate, TokenRead
 from services.security_audit_service import log_security_event
 

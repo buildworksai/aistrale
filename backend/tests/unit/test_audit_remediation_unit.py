@@ -1,8 +1,10 @@
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from services.inference_service import run_inference
-from models.prompt import Prompt
+
 from core.metrics import INFERENCE_COUNT
+from models.prompt import Prompt
+from services.inference_service import run_inference
 
 
 @pytest.mark.asyncio

@@ -1,15 +1,15 @@
 """Project management API endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlmodel import Session, select
-from pydantic import BaseModel, ConfigDict
 
-from core.database import get_session
+import structlog
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, ConfigDict
+from sqlmodel import Session, select
+
 from api.deps import get_current_user_id
+from core.database import get_session
 from models.project import Project
 from models.workspace import Workspace
-import structlog
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -30,16 +30,16 @@ class ProjectRead(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
-    name: Optional[str] = None
+    name: str | None = None
 
 
-@router.get("/", response_model=List[ProjectRead])
+@router.get("/", response_model=list[ProjectRead])
 def list_projects(
     request: Request,
-    workspace_id: Optional[int] = None,
+    workspace_id: int | None = None,
     session: Session = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
-) -> List[Project]:
+) -> list[Project]:
     """List projects, optionally filtered by workspace."""
     query = select(Project)
     if workspace_id:

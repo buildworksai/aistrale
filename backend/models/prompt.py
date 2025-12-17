@@ -1,23 +1,23 @@
 from datetime import datetime
-from typing import Optional, List
+
+from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
-from sqlalchemy import Column, JSON
 
 
 class PromptBase(SQLModel):
     name: str = Field(index=True, unique=True)
     template: str
-    input_variables: List[str] = Field(default=[], sa_column=Column(JSON))
+    input_variables: list[str] = Field(default=[], sa_column=Column(JSON))
     version: int = Field(default=1)
-    description: Optional[str] = None
-    model: Optional[str] = None  # Default model for this prompt
+    description: str | None = None
+    model: str | None = None  # Default model for this prompt
 
 
 class Prompt(PromptBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user_id: int | None = Field(default=None, foreign_key="user.id")
 
 
 class PromptCreate(PromptBase):
@@ -28,11 +28,11 @@ class PromptRead(PromptBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    user_id: Optional[int]
+    user_id: int | None
 
 
 class PromptUpdate(SQLModel):
-    template: Optional[str] = None
-    input_variables: Optional[List[str]] = None
-    description: Optional[str] = None
-    model: Optional[str] = None
+    template: str | None = None
+    input_variables: list[str] | None = None
+    description: str | None = None
+    model: str | None = None

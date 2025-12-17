@@ -1,22 +1,21 @@
 import time
-from typing import Optional
 
 import sentry_sdk
+from opentelemetry import trace
 from sqlmodel import Session
 
-from opentelemetry import trace
 from core.exceptions import InferenceError
 from core.metrics import (
-    INFERENCE_COUNT,
     INFERENCE_COST,
+    INFERENCE_COUNT,
     INFERENCE_DURATION,
     INFERENCE_TOKENS,
 )
-from models.telemetry import Telemetry
 from models.prompt import Prompt
-from services.prompt_service import render_prompt
+from models.telemetry import Telemetry
 from services.llm_providers.factory import get_provider
 from services.pricing_service import PricingService
+from services.prompt_service import render_prompt
 
 tracer = trace.get_tracer(__name__)
 
@@ -30,9 +29,9 @@ async def run_inference(
     token_value: str,
     hf_provider: str = "auto",
     task: str = "auto",
-    history: Optional[list] = None,
-    prompt_id: Optional[int] = None,
-    prompt_variables: Optional[dict] = None,
+    history: list | None = None,
+    prompt_id: int | None = None,
+    prompt_variables: dict | None = None,
 ):
     history = history or []
     start_time = time.time()
@@ -153,7 +152,7 @@ async def run_inference(
             span.record_exception(Exception(error_message))
 
             # Capture exception with context in Sentry
-            with sentry_sdk.push_scope() as scope:
+            with sentry_sdk.new_scope() as scope:
                 scope.set_tag("provider", provider)
                 scope.set_tag("model", model or "auto")
                 scope.set_user({"id": user_id})

@@ -1,9 +1,11 @@
 """Comprehensive tests for inference API endpoints."""
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from models.token import Token
+
 from models.chat import ChatMessage
+from models.token import Token
 
 
 class TestInferenceAPI:
@@ -13,6 +15,7 @@ class TestInferenceAPI:
     def test_token(self, mock_session):
         """Create a test token."""
         from cryptography.fernet import Fernet
+
         from core.config import get_settings
 
         settings = get_settings()
@@ -43,9 +46,10 @@ class TestInferenceAPI:
 
         # Login to set session (inference endpoint checks
         # request.session.get("user_id") directly)
-        from models.user import User
-        from core.security import get_password_hash
         from unittest.mock import patch
+
+        from core.security import get_password_hash
+        from models.user import User
 
         test_user = User(
             id=1,
@@ -118,9 +122,10 @@ class TestInferenceAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
 
         # Login to set session
-        from models.user import User
-        from core.security import get_password_hash
         from unittest.mock import patch
+
+        from core.security import get_password_hash
+        from models.user import User
 
         test_user = User(
             id=1,
@@ -163,9 +168,10 @@ class TestInferenceAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
 
         # Login to set session
-        from models.user import User
-        from core.security import get_password_hash
         from unittest.mock import patch
+
+        from core.security import get_password_hash
+        from models.user import User
 
         test_user = User(
             id=1,
@@ -206,9 +212,10 @@ class TestInferenceAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
 
         # Login to set session
-        from models.user import User
-        from core.security import get_password_hash
         from unittest.mock import patch
+
+        from core.security import get_password_hash
+        from models.user import User
 
         test_user = User(
             id=1,
@@ -264,9 +271,10 @@ class TestInferenceAPI:
         app.dependency_overrides[get_session] = lambda: mock_session
 
         # Login to set session
-        from models.user import User
-        from core.security import get_password_hash
         from unittest.mock import patch
+
+        from core.security import get_password_hash
+        from models.user import User
 
         test_user = User(
             id=1,

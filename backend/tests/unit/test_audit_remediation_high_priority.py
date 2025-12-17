@@ -1,8 +1,10 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
+
+from core.exceptions import InferenceError
 from services.evaluation_service import EvaluationService
 from services.inference_service import run_inference
-from core.exceptions import InferenceError
 
 
 def test_load_dataset_json(tmp_path):

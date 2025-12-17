@@ -1,8 +1,10 @@
 import logging
-from typing import Callable, Awaitable
+from collections.abc import Awaitable, Callable
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+
 from services.region_service import RegionService
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,8 @@ class RegionMiddleware(BaseHTTPMiddleware):
                         "detail": f"Region '{region_header}' is not supported."}, )
 
             # Start of a "routing" check simulation
-            # In a multi-region deployment, checking if we are in the correct region would happen here.
+            # In a multi-region deployment, checking if we are in the correct region
+            # would happen here.
             # current_region = os.getenv("CURRENT_REGION")
             # if current_region and region_header != current_region:
             # return JSONResponse(status_code=409, content={"detail": "Wrong

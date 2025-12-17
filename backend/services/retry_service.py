@@ -1,7 +1,9 @@
+import asyncio
 import logging
 import random
-import asyncio
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
+
 from models.reliability import RetryConfig
 
 logger = logging.getLogger(__name__)
@@ -44,7 +46,9 @@ class RetryService:
                 sleep_time = delay + jitter
 
                 logger.warning(
-                    f"Retry: Attempt {attempts} failed. Retrying in {sleep_time:.2f}s..."
+                    "Retry: Attempt %s failed. Retrying in %.2fs...",
+                    attempts,
+                    sleep_time,
                 )
                 await asyncio.sleep(sleep_time)
 

@@ -1,10 +1,9 @@
-from unittest.mock import patch, MagicMock
-
-from models.user import User
+from unittest.mock import MagicMock, patch
 
 # Import the conftest module to access the shared test session data
 # This ensures we're using the same dictionary instance
 import tests.conftest
+from models.user import User
 
 
 @patch("api.auth.verify_password")

@@ -1,15 +1,15 @@
 """Permission management API endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from sqlmodel import Session, select, and_
-from pydantic import BaseModel, ConfigDict
 
-from core.database import get_session
+import structlog
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel, ConfigDict
+from sqlmodel import Session, and_, select
+
 from api.deps import get_current_user_id, require_admin
+from core.database import get_session
 from models.permission import Permission
 from services.permission_service import PermissionService
-import structlog
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -18,7 +18,7 @@ router = APIRouter()
 class PermissionCreate(BaseModel):
     user_id: int
     resource_type: str
-    resource_id: Optional[str] = None
+    resource_id: str | None = None
     action: str
     granted: bool = True
 
@@ -27,7 +27,7 @@ class PermissionRead(BaseModel):
     id: int
     user_id: int
     resource_type: str
-    resource_id: Optional[str]
+    resource_id: str | None
     action: str
     granted: bool
 
@@ -35,27 +35,27 @@ class PermissionRead(BaseModel):
 
 
 class PermissionUpdate(BaseModel):
-    action: Optional[str] = None
-    granted: Optional[bool] = None
+    action: str | None = None
+    granted: bool | None = None
 
 
 class PermissionBulkUpdate(BaseModel):
-    user_ids: List[int]
+    user_ids: list[int]
     resource_type: str
-    resource_id: Optional[str] = None
+    resource_id: str | None = None
     action: str
     granted: bool
 
 
-@router.get("/", response_model=List[PermissionRead])
+@router.get("/", response_model=list[PermissionRead])
 def list_permissions(
     request: Request,
-    user_id: Optional[int] = Query(None),
-    resource_type: Optional[str] = Query(None),
-    resource_id: Optional[str] = Query(None),
+    user_id: int | None = Query(None),
+    resource_type: str | None = Query(None),
+    resource_id: str | None = Query(None),
     session: Session = Depends(get_session),
     current_user_id: int = Depends(get_current_user_id),
-) -> List[Permission]:
+) -> list[Permission]:
     """List permissions with optional filters."""
     query = select(Permission)
 
@@ -102,13 +102,13 @@ def create_permission(
     return permission
 
 
-@router.post("/bulk", response_model=List[PermissionRead], status_code=201)
+@router.post("/bulk", response_model=list[PermissionRead], status_code=201)
 def create_bulk_permissions(
     request: Request,
     bulk_data: PermissionBulkUpdate,
     session: Session = Depends(get_session),
     user_id: int = Depends(require_admin),
-) -> List[Permission]:
+) -> list[Permission]:
     """Create multiple permissions at once (admin only)."""
     permissions = []
     for user_id_val in bulk_data.user_ids:
@@ -208,14 +208,12 @@ def check_permission(
     user_id: int,
     resource_type: str,
     action: str,
-    resource_id: Optional[str] = Query(None),
+    resource_id: str | None = Query(None),
     session: Session = Depends(get_session),
     current_user_id: int = Depends(get_current_user_id),
 ) -> dict:
     """Check if a user has a specific permission."""
-    permission_service = PermissionService()
-    # In real implementation, this would use the session to query DB
-    # For now, use the service's check_permission method
+    permission_service = PermissionService(session)
     has_permission = permission_service.check_permission(
         user_id=user_id,
         action=action,

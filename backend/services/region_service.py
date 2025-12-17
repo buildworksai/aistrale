@@ -1,6 +1,6 @@
 import logging
-from typing import List
-from models.region import Region, DataRegionConfig
+
+from models.region import DataRegionConfig, Region
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class RegionService:
             default_region=Region.US_EAST_1,
         )
 
-    def get_supported_regions(self) -> List[Region]:
+    def get_supported_regions(self) -> list[Region]:
         return self.config.allowed_regions
 
     def is_region_allowed(self, region_code: str) -> bool:

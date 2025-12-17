@@ -1,6 +1,7 @@
 """Tests for telemetry cost analytics."""
 
 from unittest.mock import MagicMock
+
 from models.telemetry import Telemetry
 
 
@@ -9,12 +10,11 @@ class TestTelemetryCostAnalytics:
 
     def test_get_cost_analytics(self, client, mock_session):
         """Test getting cost analytics."""
-        from api.deps import get_current_user_id
-        from core.database import get_session
-
         # Mock telemetry records
         from datetime import datetime
-        from datetime import datetime
+
+        from api.deps import get_current_user_id
+        from core.database import get_session
 
         telemetry1 = Telemetry(
             id=1,

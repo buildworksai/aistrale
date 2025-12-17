@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict
+
 from models.reliability import CircuitBreaker
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class CircuitBreakerService:
                  recovery_timeout_sec: int = 30):
         self.failure_threshold = failure_threshold
         self.recovery_timeout_sec = recovery_timeout_sec
-        self._breakers: Dict[str, CircuitBreaker] = {}
+        self._breakers: dict[str, CircuitBreaker] = {}
 
     def get_breaker(self, provider: str) -> CircuitBreaker:
         if provider not in self._breakers:

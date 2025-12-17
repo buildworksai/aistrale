@@ -1,3 +1,5 @@
+import os
+
 import requests
 
 API_URL = "http://localhost:8000/api/inference/run"
@@ -8,7 +10,11 @@ LOGIN_URL = "http://localhost:8000/api/auth/login"
 
 def get_session():
     s = requests.Session()
-    data = {"email": "admin@buildworks.ai", "password": "admin@134"}
+    email = os.getenv("ADMIN_SEED_EMAIL")
+    password = os.getenv("ADMIN_SEED_PASSWORD")
+    if not email or not password:
+        raise RuntimeError("ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD must be set")
+    data = {"email": email, "password": password}
     res = s.post(LOGIN_URL, json=data)
     if res.status_code != 200:  # noqa: PLR2004
         print(f"Login failed: {res.text}")

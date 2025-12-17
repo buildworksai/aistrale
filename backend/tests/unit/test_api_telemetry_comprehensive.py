@@ -1,9 +1,10 @@
 """Comprehensive tests for telemetry API endpoints."""
 
-from unittest.mock import MagicMock
 from datetime import datetime
-from models.telemetry import Telemetry
+from unittest.mock import MagicMock
+
 from api.deps import get_current_user_id
+from models.telemetry import Telemetry
 
 
 class TestTelemetryAPI:

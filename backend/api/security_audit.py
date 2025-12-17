@@ -1,13 +1,12 @@
 """Security audit API endpoints."""
 
 from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session, select, and_, desc
+from sqlmodel import Session, and_, desc, select
 
-from core.database import get_session
 from api.deps import require_admin
+from core.database import get_session
 from models.security_audit import SecurityAudit, SecurityAuditRead
 
 router = APIRouter()
@@ -17,10 +16,10 @@ router = APIRouter()
 def list_audit_events(
     session: Session = Depends(get_session),
     user_id: int = Depends(require_admin),
-    event_type: Optional[str] = Query(None),
-    target_user_id: Optional[int] = Query(None),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    event_type: str | None = Query(None),
+    target_user_id: int | None = Query(None),
+    start_date: datetime | None = Query(None),
+    end_date: datetime | None = Query(None),
     limit: int = Query(100, le=1000),
     offset: int = Query(0, ge=0),
 ) -> list[SecurityAudit]:

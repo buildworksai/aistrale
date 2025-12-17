@@ -1,11 +1,11 @@
 """Google Gemini provider implementation."""
 
 import asyncio
-from typing import Optional, Dict
+import importlib
 
-import google.generativeai as genai
+from services.llm_providers.base import InferenceResult, LLMProvider
 
-from services.llm_providers.base import LLMProvider, InferenceResult
+genai = None
 
 
 class GeminiProvider(LLMProvider):
@@ -20,17 +20,25 @@ class GeminiProvider(LLMProvider):
             **kwargs: Additional parameters
         """
         self.token = token
-        genai.configure(api_key=token)
+
+    def _get_genai(self):
+        if globals().get("genai") is None:
+            genai_module = importlib.import_module("google.generativeai")
+            genai_module.configure(api_key=self.token)
+            globals()["genai"] = genai_module
+        return globals()["genai"]
 
     async def run_inference(
             self,
             model: str,
             input_text: str,
-            history: Optional[list] = None,
+            history: list | None = None,
             **kwargs) -> InferenceResult:
         """Run Gemini inference."""
         history = history or []
         target_model = model if model and model != "auto" else "gemini-pro"
+
+        genai = self._get_genai()
 
         # Initialize the model
         genai_model = genai.GenerativeModel(target_model)
@@ -64,7 +72,7 @@ class GeminiProvider(LLMProvider):
             output_tokens=output_tokens,
         )
 
-    def get_pricing(self, model: str) -> Dict[str, float]:
+    def get_pricing(self, model: str) -> dict[str, float]:
         """Get Gemini pricing per 1M tokens."""
         # Pricing per 1M tokens
         pricing = {

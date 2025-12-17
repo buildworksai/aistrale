@@ -1,5 +1,6 @@
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from models.multi_provider import ModelMapping
 
 logger = logging.getLogger(__name__)
@@ -69,8 +70,8 @@ class ModelAbstractionService:
         ]
 
     def resolve_model(
-        self, unified_name: str, preferred_provider: Optional[str] = None
-    ) -> Dict[str, str]:
+        self, unified_name: str, preferred_provider: str | None = None
+    ) -> dict[str, str]:
         """
         Resolve a unified model name to a specific provider and model ID.
         """
@@ -84,9 +85,11 @@ class ModelAbstractionService:
                 "provider": preferred_provider or "openai",
                 "model": unified_name}
 
-        # If preferred provider is in equivalents (checking loosely by provider name matching conventions)
+        # If preferred provider is in equivalents (checking loosely by provider name
+        # matching conventions)
         # In reality, equivalents would be structured as {provider: model_id}
-        # For this simulation/schema "equivalent_models" is a list of strings like ["gpt-3.5-turbo", ...]
+        # For this simulation/schema "equivalent_models" is a list of strings like
+        # ["gpt-3.5-turbo", ...]
         # Simple heuristic mapping for demo:
 
         target_provider = mapping.provider  # Default to primary
@@ -117,7 +120,7 @@ class ModelAbstractionService:
             "pricing": mapping.pricing,
         }
 
-    def get_capabilities(self, unified_name: str) -> Dict[str, Any]:
+    def get_capabilities(self, unified_name: str) -> dict[str, Any]:
         """
         Get capabilities for a unified model.
         """
@@ -125,7 +128,7 @@ class ModelAbstractionService:
             (m for m in self.mappings if m.model_name == unified_name), None)
         return mapping.capabilities if mapping else {}
 
-    def list_mappings(self) -> List[Dict[str, Any]]:
+    def list_mappings(self) -> list[dict[str, Any]]:
         """
         Get all model mappings.
         """
